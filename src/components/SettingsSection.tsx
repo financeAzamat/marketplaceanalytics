@@ -1,223 +1,225 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Settings, 
-  ExternalLink, 
-  Check, 
-  X, 
-  RefreshCw,
-  Shield,
-  Bell,
-  User,
-  Key
-} from "lucide-react";
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 export const SettingsSection = () => {
-  const [wbConnected, setWbConnected] = useState(true);
-  const [ozonConnected, setOzonConnected] = useState(false);
-  const [notifications, setNotifications] = useState(true);
-  const [autoSync, setAutoSync] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  // Fetch user profile and settings
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: settings, refetch: refetchSettings } = useQuery({
+    queryKey: ['user-settings', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const [formData, setFormData] = useState({
+    fullName: profile?.full_name || '',
+    companyName: profile?.company_name || '',
+    emailNotifications: settings?.email_notifications ?? true,
+    autoSync: settings?.auto_sync ?? true,
+    syncFrequency: settings?.sync_frequency_hours || 6,
+  });
+
+  const handleSaveProfile = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.fullName,
+          company_name: formData.companyName,
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Профиль обновлен",
+        description: "Ваши данные успешно сохранены",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось сохранить профиль",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('user_settings')
+        .update({
+          email_notifications: formData.emailNotifications,
+          auto_sync: formData.autoSync,
+          sync_frequency_hours: formData.syncFrequency,
+        })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      await refetchSettings();
+      
+      toast({
+        title: "Настройки сохранены",
+        description: "Ваши предпочтения успешно обновлены",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось сохранить настройки",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
       {/* Profile Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <User className="h-5 w-5" />
-            <span>Профиль</span>
-          </CardTitle>
+          <CardTitle>Профиль</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Имя</Label>
-              <Input id="name" placeholder="Ваше имя" defaultValue="Иван Петров" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="your@email.com" defaultValue="ivan@example.com" />
-            </div>
-          </div>
           <div className="space-y-2">
-            <Label htmlFor="company">Компания</Label>
-            <Input id="company" placeholder="Название компании" defaultValue="ООО Торговый Дом" />
+            <Label htmlFor="fullName">Полное имя</Label>
+            <Input
+              id="fullName"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              placeholder="Введите ваше полное имя"
+            />
           </div>
-          <Button>Сохранить изменения</Button>
-        </CardContent>
-      </Card>
-
-      {/* Marketplace Connections */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <ExternalLink className="h-5 w-5" />
-            <span>Подключение маркетплейсов</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Wildberries */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span className="text-purple-600 font-bold text-lg">WB</span>
-              </div>
-              <div>
-                <h3 className="font-medium">Wildberries</h3>
-                <p className="text-sm text-slate-600">
-                  {wbConnected ? "Подключено • Последняя синхронизация: 10:30" : "Не подключено"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              {wbConnected ? (
-                <Badge className="bg-green-100 text-green-800 border-green-200">
-                  <Check className="h-3 w-3 mr-1" />
-                  Подключено
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-red-600 border-red-200">
-                  <X className="h-3 w-3 mr-1" />
-                  Не подключено
-                </Badge>
-              )}
-              <Button 
-                variant={wbConnected ? "outline" : "default"}
-                size="sm"
-                onClick={() => setWbConnected(!wbConnected)}
-              >
-                {wbConnected ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Переподключить
-                  </>
-                ) : (
-                  <>
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Подключить
-                  </>
-                )}
-              </Button>
-            </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="companyName">Название компании</Label>
+            <Input
+              id="companyName"
+              value={formData.companyName}
+              onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+              placeholder="Название вашей компании (необязательно)"
+            />
           </div>
 
-          {/* Ozon */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-blue-600 font-bold text-lg">OZ</span>
-              </div>
-              <div>
-                <h3 className="font-medium">Ozon</h3>
-                <p className="text-sm text-slate-600">
-                  {ozonConnected ? "Подключено • Последняя синхронизация: 09:45" : "Не подключено"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              {ozonConnected ? (
-                <Badge className="bg-green-100 text-green-800 border-green-200">
-                  <Check className="h-3 w-3 mr-1" />
-                  Подключено
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-red-600 border-red-200">
-                  <X className="h-3 w-3 mr-1" />
-                  Не подключено
-                </Badge>
-              )}
-              <Button 
-                variant={ozonConnected ? "outline" : "default"}
-                size="sm"
-                onClick={() => setOzonConnected(!ozonConnected)}
-              >
-                {ozonConnected ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Переподключить
-                  </>
-                ) : (
-                  <>
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Подключить
-                  </>
-                )}
-              </Button>
-            </div>
+          <div className="space-y-2">
+            <Label>Email</Label>
+            <Input value={user?.email || ''} disabled className="bg-gray-50" />
+            <p className="text-xs text-gray-500">Email нельзя изменить</p>
           </div>
+          
+          <Button onClick={handleSaveProfile} disabled={loading}>
+            Сохранить профиль
+          </Button>
         </CardContent>
       </Card>
 
       {/* Notification Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Bell className="h-5 w-5" />
-            <span>Уведомления</span>
-          </CardTitle>
+          <CardTitle>Уведомления и синхронизация</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="notifications">Email уведомления</Label>
-              <p className="text-sm text-slate-600">Получать отчёты и важные обновления на email</p>
+            <div className="space-y-0.5">
+              <Label htmlFor="emailNotifications">Email уведомления</Label>
+              <p className="text-sm text-gray-500">
+                Получать уведомления о новых данных и отчетах
+              </p>
             </div>
             <Switch
-              id="notifications"
-              checked={notifications}
-              onCheckedChange={setNotifications}
+              id="emailNotifications"
+              checked={formData.emailNotifications}
+              onCheckedChange={(checked) => 
+                setFormData({ ...formData, emailNotifications: checked })
+              }
             />
           </div>
 
+          <Separator />
+
           <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="auto-sync">Автоматическая синхронизация</Label>
-              <p className="text-sm text-slate-600">Автоматически обновлять данные каждые 6 часов</p>
+            <div className="space-y-0.5">
+              <Label htmlFor="autoSync">Автоматическая синхронизация</Label>
+              <p className="text-sm text-gray-500">
+                Автоматически синхронизировать данные с маркетплейсами
+              </p>
             </div>
             <Switch
-              id="auto-sync"
-              checked={autoSync}
-              onCheckedChange={setAutoSync}
+              id="autoSync"
+              checked={formData.autoSync}
+              onCheckedChange={(checked) => 
+                setFormData({ ...formData, autoSync: checked })
+              }
             />
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Security */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Shield className="h-5 w-5" />
-            <span>Безопасность</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Изменить пароль</Label>
-              <p className="text-sm text-slate-600">Обновите пароль для повышения безопасности</p>
+          {formData.autoSync && (
+            <div className="space-y-2">
+              <Label htmlFor="syncFrequency">Частота синхронизации (часы)</Label>
+              <Input
+                id="syncFrequency"
+                type="number"
+                min="1"
+                max="24"
+                value={formData.syncFrequency}
+                onChange={(e) => 
+                  setFormData({ ...formData, syncFrequency: parseInt(e.target.value) || 6 })
+                }
+              />
+              <p className="text-xs text-gray-500">
+                Как часто синхронизировать данные (от 1 до 24 часов)
+              </p>
             </div>
-            <Button variant="outline">
-              <Key className="h-4 w-4 mr-2" />
-              Изменить
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>API токены</Label>
-              <p className="text-sm text-slate-600">Управление токенами доступа к API</p>
-            </div>
-            <Button variant="outline">
-              Управление
-            </Button>
-          </div>
+          )}
+          
+          <Button onClick={handleSaveSettings} disabled={loading}>
+            Сохранить настройки
+          </Button>
         </CardContent>
       </Card>
     </div>
