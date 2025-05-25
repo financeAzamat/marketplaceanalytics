@@ -85,7 +85,7 @@ const Index = () => {
                 className="bg-white/60 border-slate-200/60 hover:bg-white/80 shadow-sm backdrop-blur-sm"
               >
                 <Settings className="h-4 w-4 mr-2" />
-                Settings
+                Настройки
               </Button>
               <Button 
                 variant="outline" 
@@ -110,28 +110,28 @@ const Index = () => {
               className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
             >
               <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Dashboard</span>
+              <span className="hidden sm:inline font-medium">Панель</span>
             </TabsTrigger>
             <TabsTrigger 
               value="reports" 
               className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
             >
               <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Reports</span>
+              <span className="hidden sm:inline font-medium">Отчеты</span>
             </TabsTrigger>
             <TabsTrigger 
               value="settings" 
               className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
             >
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Settings</span>
+              <span className="hidden sm:inline font-medium">Настройки</span>
             </TabsTrigger>
             <TabsTrigger 
               value="pricing" 
               className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
             >
               <DollarSign className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Pricing</span>
+              <span className="hidden sm:inline font-medium">Тарифы</span>
             </TabsTrigger>
           </TabsList>
 
