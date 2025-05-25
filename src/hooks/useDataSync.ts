@@ -44,12 +44,13 @@ export const useDataSync = () => {
     mutationFn: async (marketplace: 'wildberries' | 'ozon') => {
       if (!user?.id) throw new Error('User not authenticated');
       
+      console.log('Starting sync for marketplace:', marketplace, 'User ID:', user.id);
+      
       // Simulate real API sync with progress updates
       setSyncProgress(prev => ({ ...prev, [marketplace]: 0 }));
       
       // Mock sales data generation
       const salesData = [];
-      const costData = [];
       
       for (let i = 0; i < 30; i++) {
         const date = new Date();
@@ -75,12 +76,31 @@ export const useDataSync = () => {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       
-      // Insert sales data
+      console.log('Generated sales data:', salesData.length, 'records');
+      
+      // Delete existing data for this marketplace and user to avoid conflicts
+      const { error: deleteError } = await supabase
+        .from('sales_data')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('marketplace', marketplace);
+      
+      if (deleteError) {
+        console.error('Delete error:', deleteError);
+        throw deleteError;
+      }
+      
+      // Insert new sales data
       const { error: salesError } = await supabase
         .from('sales_data')
-        .upsert(salesData, { onConflict: 'user_id,marketplace,sale_date' });
+        .insert(salesData);
       
-      if (salesError) throw salesError;
+      if (salesError) {
+        console.error('Sales insert error:', salesError);
+        throw salesError;
+      }
+      
+      console.log('Successfully inserted sales data');
       
       // Update last sync time
       const { error: updateError } = await supabase
@@ -92,7 +112,10 @@ export const useDataSync = () => {
         .eq('user_id', user.id)
         .eq('marketplace', marketplace);
       
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Update sync time error:', updateError);
+        throw updateError;
+      }
       
       setSyncProgress(prev => ({ ...prev, [marketplace]: 100 }));
       return { marketplace, recordsCount: salesData.length };
@@ -107,6 +130,7 @@ export const useDataSync = () => {
       queryClient.invalidateQueries({ queryKey: ['cost-data'] });
     },
     onError: (error: any) => {
+      console.error('Sync error:', error);
       toast({
         title: "Ошибка синхронизации",
         description: error.message || "Не удалось синхронизировать данные",
