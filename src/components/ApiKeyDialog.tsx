@@ -38,19 +38,44 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      // First check if connection exists
+      const { data: existingConnection } = await supabase
         .from('marketplace_connections')
-        .upsert({
-          user_id: user.id,
-          marketplace,
-          is_connected: true,
-          access_token: apiKey,
-          refresh_token: clientId || null,
-          token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
-          updated_at: new Date().toISOString(),
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('marketplace', marketplace)
+        .single();
 
-      if (error) throw error;
+      if (existingConnection) {
+        // Update existing connection
+        const { error } = await supabase
+          .from('marketplace_connections')
+          .update({
+            is_connected: true,
+            access_token: apiKey,
+            refresh_token: clientId || null,
+            token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id)
+          .eq('marketplace', marketplace);
+
+        if (error) throw error;
+      } else {
+        // Insert new connection
+        const { error } = await supabase
+          .from('marketplace_connections')
+          .insert({
+            user_id: user.id,
+            marketplace,
+            is_connected: true,
+            access_token: apiKey,
+            refresh_token: clientId || null,
+            token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          });
+
+        if (error) throw error;
+      }
 
       toast({
         title: "Успешно сохранено",
