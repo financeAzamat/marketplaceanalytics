@@ -5,16 +5,18 @@ import { DataSyncDashboard } from './DataSyncDashboard';
 import { FileUpload } from './FileUpload';
 import { ABCAnalysis } from './ABCAnalysis';
 import { FinanceSection } from './FinanceSection';
+import { RawDataViewer } from './RawDataViewer';
 
 export const ReportsSection = () => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="reports" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="reports">Отчеты</TabsTrigger>
           <TabsTrigger value="abc">ABC Анализ</TabsTrigger>
           <TabsTrigger value="finance">Финансы</TabsTrigger>
           <TabsTrigger value="sync">Синхронизация</TabsTrigger>
+          <TabsTrigger value="raw-data">Сырые данные</TabsTrigger>
           <TabsTrigger value="upload">Загрузка файлов</TabsTrigger>
         </TabsList>
 
@@ -32,6 +34,10 @@ export const ReportsSection = () => {
 
         <TabsContent value="sync" className="space-y-6">
           <DataSyncDashboard />
+        </TabsContent>
+
+        <TabsContent value="raw-data" className="space-y-6">
+          <RawDataViewer />
         </TabsContent>
 
         <TabsContent value="upload" className="space-y-6">
