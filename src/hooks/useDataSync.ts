@@ -78,29 +78,20 @@ export const useDataSync = () => {
       
       console.log('Generated sales data:', salesData.length, 'records');
       
-      // Delete existing data for this marketplace and user to avoid conflicts
-      const { error: deleteError } = await supabase
+      // Use upsert to handle existing records
+      const { error: upsertError } = await supabase
         .from('sales_data')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('marketplace', marketplace);
+        .upsert(salesData, {
+          onConflict: 'user_id,marketplace,sale_date',
+          ignoreDuplicates: false
+        });
       
-      if (deleteError) {
-        console.error('Delete error:', deleteError);
-        throw deleteError;
+      if (upsertError) {
+        console.error('Upsert error:', upsertError);
+        throw upsertError;
       }
       
-      // Insert new sales data
-      const { error: salesError } = await supabase
-        .from('sales_data')
-        .insert(salesData);
-      
-      if (salesError) {
-        console.error('Sales insert error:', salesError);
-        throw salesError;
-      }
-      
-      console.log('Successfully inserted sales data');
+      console.log('Successfully upserted sales data');
       
       // Update last sync time
       const { error: updateError } = await supabase
