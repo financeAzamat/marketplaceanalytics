@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,17 @@ import { useFinancialAI } from '@/hooks/useFinancialAI';
 export const FinancialAIChat = () => {
   const { messages, sendMessage, clearChat, isLoading } = useFinancialAI();
   const [inputMessage, setInputMessage] = useState('');
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Автоматическая прокрутка к последнему сообщению
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = () => {
     if (inputMessage.trim()) {
@@ -42,8 +53,8 @@ export const FinancialAIChat = () => {
   };
 
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader>
+    <Card className="h-[calc(100vh-12rem)] max-h-[700px] min-h-[500px] flex flex-col">
+      <CardHeader className="flex-shrink-0">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5" />
@@ -59,8 +70,8 @@ export const FinancialAIChat = () => {
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 p-4">
+      <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {messages.map((message) => (
               <div
@@ -70,7 +81,7 @@ export const FinancialAIChat = () => {
                 }`}
               >
                 <div
-                  className={`flex gap-2 max-w-[80%] ${
+                  className={`flex gap-2 max-w-[85%] ${
                     message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                   }`}
                 >
@@ -86,7 +97,7 @@ export const FinancialAIChat = () => {
                     )}
                   </div>
                   <div
-                    className={`rounded-lg p-3 ${
+                    className={`rounded-lg p-3 break-words ${
                       message.role === 'user'
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-100 text-gray-900'
@@ -107,7 +118,7 @@ export const FinancialAIChat = () => {
             ))}
             {isLoading && (
               <div className="flex gap-3 justify-start">
-                <div className="flex gap-2">
+                <div className="flex gap-2 max-w-[85%]">
                   <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                     <Bot className="h-4 w-4 text-white" />
                   </div>
@@ -121,10 +132,11 @@ export const FinancialAIChat = () => {
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
         <Separator />
-        <div className="p-4">
+        <div className="flex-shrink-0 p-4">
           <div className="flex gap-2">
             <Input
               value={inputMessage}
