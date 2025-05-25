@@ -4,6 +4,7 @@ import { ExpenseForm } from './finance/ExpenseForm';
 import { ExpenseTable } from './finance/ExpenseTable';
 import { PaymentForm } from './finance/PaymentForm';
 import { PaymentTable } from './finance/PaymentTable';
+import { FinancialAIChat } from './finance/FinancialAIChat';
 
 export const FinanceSection = () => {
   return (
@@ -14,9 +15,10 @@ export const FinanceSection = () => {
       </div>
 
       <Tabs defaultValue="expenses" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="expenses">Журнал расходов</TabsTrigger>
           <TabsTrigger value="payments">Журнал платежей</TabsTrigger>
+          <TabsTrigger value="ai-assistant">AI Аналитик</TabsTrigger>
         </TabsList>
 
         <TabsContent value="expenses" className="space-y-6">
@@ -38,6 +40,12 @@ export const FinanceSection = () => {
             <div className="lg:col-span-2">
               <PaymentTable />
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="ai-assistant" className="space-y-6">
+          <div className="max-w-4xl mx-auto">
+            <FinancialAIChat />
           </div>
         </TabsContent>
       </Tabs>
