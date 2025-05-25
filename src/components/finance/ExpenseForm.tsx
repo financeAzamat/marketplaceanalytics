@@ -111,14 +111,14 @@ export const ExpenseForm = () => {
           <div>
             <Label htmlFor="marketplace">Маркетплейс (опционально)</Label>
             <Select
-              value={formData.marketplace || ''}
-              onValueChange={(value) => setFormData({ ...formData, marketplace: value })}
+              value={formData.marketplace || 'none'}
+              onValueChange={(value) => setFormData({ ...formData, marketplace: value === 'none' ? '' : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Выберите маркетплейс" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Не указан</SelectItem>
+                <SelectItem value="none">Не указан</SelectItem>
                 <SelectItem value="wildberries">Wildberries</SelectItem>
                 <SelectItem value="ozon">Ozon</SelectItem>
               </SelectContent>
