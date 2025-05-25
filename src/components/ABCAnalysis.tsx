@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -11,6 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from '@/components/ui/table';
 import {
   ChartContainer,
@@ -28,7 +29,7 @@ import {
   Cell,
   ResponsiveContainer,
 } from 'recharts';
-import { TrendingUp, Package, DollarSign, BarChart3, Loader2 } from 'lucide-react';
+import { TrendingUp, Package, DollarSign, BarChart3, Loader2, Filter } from 'lucide-react';
 import { useABCAnalysis } from '@/hooks/useABCAnalysis';
 
 const chartConfig = {
@@ -54,7 +55,17 @@ const categoryColors = {
 
 export const ABCAnalysis = () => {
   const [analysisType, setAnalysisType] = useState<'sales_volume' | 'revenue' | 'profit'>('revenue');
-  const { abcItems, categorySummary, isLoading } = useABCAnalysis(analysisType);
+  const [marketplaceFilter, setMarketplaceFilter] = useState<string[]>(['WB', 'Ozon']);
+  
+  const { abcItems, categorySummary, totals, isLoading } = useABCAnalysis(analysisType, marketplaceFilter);
+
+  const handleMarketplaceToggle = (marketplace: string) => {
+    setMarketplaceFilter(prev => 
+      prev.includes(marketplace) 
+        ? prev.filter(m => m !== marketplace)
+        : [...prev, marketplace]
+    );
+  };
 
   const pieData = Object.entries(categorySummary).map(([category, data]) => ({
     name: `Категория ${category}`,
@@ -79,7 +90,7 @@ export const ABCAnalysis = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">ABC Анализ</h2>
-            <p className="text-gray-600">Категоризация товаров по объемам продаж, выручке и прибыли</p>
+            <p className="text-gray-600">Категоризация записей продаж по объемам продаж, выручке и прибыли</p>
           </div>
         </div>
         <Card>
@@ -100,12 +111,38 @@ export const ABCAnalysis = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">ABC Анализ</h2>
-          <p className="text-gray-600">Категоризация товаров по объемам продаж, выручке и прибыли</p>
+          <p className="text-gray-600">Категоризация записей продаж по объемам продаж, выручке и прибыли</p>
         </div>
         <Button>
           Экспорт анализа
         </Button>
       </div>
+
+      {/* Marketplace Filter */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Filter className="h-5 w-5" />
+            <span>Фильтр по маркетплейсам</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex space-x-4">
+            {['WB', 'Ozon'].map(marketplace => (
+              <div key={marketplace} className="flex items-center space-x-2">
+                <Checkbox
+                  id={marketplace}
+                  checked={marketplaceFilter.includes(marketplace)}
+                  onCheckedChange={() => handleMarketplaceToggle(marketplace)}
+                />
+                <label htmlFor={marketplace} className="text-sm font-medium">
+                  {marketplace}
+                </label>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs value={analysisType} onValueChange={(value) => setAnalysisType(value as typeof analysisType)}>
         <TabsList className="grid w-full grid-cols-3">
@@ -213,13 +250,13 @@ export const ABCAnalysis = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Детальный анализ товаров</CardTitle>
+              <CardTitle>Детальный анализ записей продаж</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Товар</TableHead>
+                    <TableHead>Запись</TableHead>
                     <TableHead>Маркетплейс</TableHead>
                     <TableHead>Категория</TableHead>
                     <TableHead>Объем продаж</TableHead>
@@ -249,6 +286,14 @@ export const ABCAnalysis = () => {
                     </TableRow>
                   ))}
                 </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell colSpan={3} className="font-bold">Итого ({totals.count} записей)</TableCell>
+                    <TableCell className="font-bold">{totals.sales_volume.toLocaleString()}</TableCell>
+                    <TableCell className="font-bold">{totals.revenue.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</TableCell>
+                    <TableCell className="font-bold">{totals.profit.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</TableCell>
+                  </TableRow>
+                </TableFooter>
               </Table>
             </CardContent>
           </Card>

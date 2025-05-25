@@ -13,76 +13,42 @@ export interface ABCItem {
   marketplace: string;
 }
 
-export const useABCAnalysis = (analysisType: 'sales_volume' | 'revenue' | 'profit' = 'revenue') => {
+export const useABCAnalysis = (
+  analysisType: 'sales_volume' | 'revenue' | 'profit' = 'revenue',
+  marketplaceFilter: string[] = []
+) => {
   const { user } = useAuth();
 
   const { data: abcItems, isLoading } = useQuery({
-    queryKey: ['abc-analysis', user?.id, analysisType],
+    queryKey: ['abc-analysis', user?.id, analysisType, marketplaceFilter],
     queryFn: async () => {
       if (!user?.id) return [];
       
-      // Aggregate sales data by marketplace and date to create "items"
-      const { data: salesData, error } = await supabase
+      // Get sales data filtered by marketplace if specified
+      let query = supabase
         .from('sales_data')
         .select('*')
         .eq('user_id', user.id)
         .order('sale_date', { ascending: false });
 
+      if (marketplaceFilter.length > 0) {
+        query = query.in('marketplace', marketplaceFilter);
+      }
+
+      const { data: salesData, error } = await query;
+
       if (error) throw error;
       if (!salesData || salesData.length === 0) return [];
 
-      // Group data by marketplace to create items
-      const itemsMap = new Map<string, {
-        sales_volume: number;
-        revenue: number;
-        profit: number;
-        marketplace: string;
-      }>();
-
-      salesData.forEach(record => {
-        const key = record.marketplace;
-        if (itemsMap.has(key)) {
-          const existing = itemsMap.get(key)!;
-          existing.sales_volume += record.orders_count;
-          existing.revenue += Number(record.revenue);
-          existing.profit += Number(record.profit);
-        } else {
-          itemsMap.set(key, {
-            sales_volume: record.orders_count,
-            revenue: Number(record.revenue),
-            profit: Number(record.profit),
-            marketplace: record.marketplace,
-          });
-        }
-      });
-
-      // Convert to array and add top products from each marketplace
-      const items: Omit<ABCItem, 'category'>[] = [];
-      
-      itemsMap.forEach((data, marketplace) => {
-        items.push({
-          id: `marketplace-${marketplace}`,
-          name: `${marketplace} (общие продажи)`,
-          sales_volume: data.sales_volume,
-          revenue: data.revenue,
-          profit: data.profit,
-          marketplace: data.marketplace,
-        });
-
-        // Add some sample products for each marketplace based on proportions
-        const productCount = Math.min(10, Math.max(3, Math.floor(data.sales_volume / 100)));
-        for (let i = 1; i <= productCount; i++) {
-          const proportion = Math.random() * 0.3 + 0.1; // 10-40% of total
-          items.push({
-            id: `${marketplace}-product-${i}`,
-            name: `${marketplace} - Товар ${i}`,
-            sales_volume: Math.floor(data.sales_volume * proportion),
-            revenue: Math.floor(data.revenue * proportion),
-            profit: Math.floor(data.profit * proportion),
-            marketplace: data.marketplace,
-          });
-        }
-      });
+      // Group data by marketplace to create items (daily records become individual items)
+      const items: Omit<ABCItem, 'category'>[] = salesData.map(record => ({
+        id: record.id,
+        name: `${record.marketplace} - ${new Date(record.sale_date).toLocaleDateString('ru-RU')}`,
+        sales_volume: record.orders_count,
+        revenue: Number(record.revenue),
+        profit: Number(record.profit),
+        marketplace: record.marketplace,
+      }));
 
       // Sort by analysis type
       items.sort((a, b) => b[analysisType] - a[analysisType]);
@@ -127,9 +93,19 @@ export const useABCAnalysis = (analysisType: 'sales_volume' | 'revenue' | 'profi
     return acc;
   }, {} as Record<string, { count: number; sales_volume: number; revenue: number; profit: number }>);
 
+  // Calculate totals
+  const totals = (abcItems || []).reduce((acc, item) => {
+    acc.count += 1;
+    acc.sales_volume += item.sales_volume;
+    acc.revenue += item.revenue;
+    acc.profit += item.profit;
+    return acc;
+  }, { count: 0, sales_volume: 0, revenue: 0, profit: 0 });
+
   return {
     abcItems: abcItems || [],
     categorySummary,
+    totals,
     isLoading,
   };
 };
