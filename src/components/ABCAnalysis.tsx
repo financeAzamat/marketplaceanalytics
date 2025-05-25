@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,7 +11,7 @@ import { EmptyStateCard } from './abc-analysis/EmptyStateCard';
 
 export const ABCAnalysis = () => {
   const [analysisType, setAnalysisType] = useState<'sales_volume' | 'revenue' | 'profit'>('revenue');
-  const [marketplaceFilter, setMarketplaceFilter] = useState<string[]>(['WB', 'Ozon']);
+  const [marketplaceFilter, setMarketplaceFilter] = useState<string[]>(['wildberries', 'ozon']);
   
   const { abcItems, categorySummary, totals, isLoading } = useABCAnalysis(analysisType, marketplaceFilter);
 
