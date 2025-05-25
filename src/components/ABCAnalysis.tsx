@@ -28,21 +28,8 @@ import {
   Cell,
   ResponsiveContainer,
 } from 'recharts';
-import { TrendingUp, Package, DollarSign, BarChart3 } from 'lucide-react';
-
-// Mock data for ABC analysis
-const mockItemsData = [
-  { id: '1', name: 'Товар A1', sales_volume: 1500, revenue: 75000, profit: 22500, category: 'A' },
-  { id: '2', name: 'Товар A2', sales_volume: 1200, revenue: 60000, profit: 18000, category: 'A' },
-  { id: '3', name: 'Товар A3', sales_volume: 1000, revenue: 50000, profit: 15000, category: 'A' },
-  { id: '4', name: 'Товар B1', sales_volume: 800, revenue: 32000, profit: 9600, category: 'B' },
-  { id: '5', name: 'Товар B2', sales_volume: 600, revenue: 24000, profit: 7200, category: 'B' },
-  { id: '6', name: 'Товар B3', sales_volume: 500, revenue: 20000, profit: 6000, category: 'B' },
-  { id: '7', name: 'Товар C1', sales_volume: 300, revenue: 9000, profit: 2700, category: 'C' },
-  { id: '8', name: 'Товар C2', sales_volume: 200, revenue: 6000, profit: 1800, category: 'C' },
-  { id: '9', name: 'Товар C3', sales_volume: 150, revenue: 4500, profit: 1350, category: 'C' },
-  { id: '10', name: 'Товар C4', sales_volume: 100, revenue: 3000, profit: 900, category: 'C' },
-];
+import { TrendingUp, Package, DollarSign, BarChart3, Loader2 } from 'lucide-react';
+import { useABCAnalysis } from '@/hooks/useABCAnalysis';
 
 const chartConfig = {
   sales_volume: {
@@ -67,18 +54,7 @@ const categoryColors = {
 
 export const ABCAnalysis = () => {
   const [analysisType, setAnalysisType] = useState<'sales_volume' | 'revenue' | 'profit'>('revenue');
-
-  // Calculate category summaries
-  const categorySummary = mockItemsData.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = { count: 0, sales_volume: 0, revenue: 0, profit: 0 };
-    }
-    acc[item.category].count += 1;
-    acc[item.category].sales_volume += item.sales_volume;
-    acc[item.category].revenue += item.revenue;
-    acc[item.category].profit += item.profit;
-    return acc;
-  }, {} as Record<string, { count: number; sales_volume: number; revenue: number; profit: number }>);
+  const { abcItems, categorySummary, isLoading } = useABCAnalysis(analysisType);
 
   const pieData = Object.entries(categorySummary).map(([category, data]) => ({
     name: `Категория ${category}`,
@@ -86,7 +62,38 @@ export const ABCAnalysis = () => {
     color: categoryColors[category as keyof typeof categoryColors],
   }));
 
-  const sortedItems = [...mockItemsData].sort((a, b) => b[analysisType] - a[analysisType]);
+  const topItems = abcItems.slice(0, 5);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        <span>Загрузка ABC анализа...</span>
+      </div>
+    );
+  }
+
+  if (abcItems.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">ABC Анализ</h2>
+            <p className="text-gray-600">Категоризация товаров по объемам продаж, выручке и прибыли</p>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Нет данных для анализа</h3>
+              <p className="text-gray-500">Синхронизируйте данные с маркетплейсами для проведения ABC анализа</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -187,7 +194,7 @@ export const ABCAnalysis = () => {
               <CardContent>
                 <ChartContainer config={chartConfig} className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={sortedItems.slice(0, 5)} layout="horizontal">
+                    <BarChart data={topItems} layout="horizontal">
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" />
                       <YAxis dataKey="name" type="category" width={80} />
@@ -213,6 +220,7 @@ export const ABCAnalysis = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Товар</TableHead>
+                    <TableHead>Маркетплейс</TableHead>
                     <TableHead>Категория</TableHead>
                     <TableHead>Объем продаж</TableHead>
                     <TableHead>Выручка</TableHead>
@@ -220,9 +228,10 @@ export const ABCAnalysis = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedItems.map((item) => (
+                  {abcItems.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell>{item.marketplace}</TableCell>
                       <TableCell>
                         <Badge 
                           variant="outline"
