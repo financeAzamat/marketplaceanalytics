@@ -39,6 +39,48 @@ export type Database = {
         }
         Relationships: []
       }
+      expense_journal: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          expense_date: string
+          id: string
+          is_tax_deductible: boolean
+          marketplace: string | null
+          receipt_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description: string
+          expense_date?: string
+          id?: string
+          is_tax_deductible?: boolean
+          marketplace?: string | null
+          receipt_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          expense_date?: string
+          id?: string
+          is_tax_deductible?: boolean
+          marketplace?: string | null
+          receipt_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_connections: {
         Row: {
           access_token: string | null
@@ -73,6 +115,51 @@ export type Database = {
           marketplace?: string
           refresh_token?: string | null
           token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payment_journal: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          id: string
+          invoice_number: string | null
+          marketplace: string | null
+          payment_date: string
+          payment_method: string
+          payment_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          invoice_number?: string | null
+          marketplace?: string | null
+          payment_date?: string
+          payment_method: string
+          payment_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_number?: string | null
+          marketplace?: string | null
+          payment_date?: string
+          payment_method?: string
+          payment_type?: string
           updated_at?: string
           user_id?: string
         }
