@@ -15,20 +15,40 @@ import {
   Download,
   RefreshCw,
   Shield,
-  Zap
+  Zap,
+  LogOut
 } from "lucide-react";
 import { AuthSection } from "@/components/AuthSection";
 import { Dashboard } from "@/components/Dashboard";
 import { ReportsSection } from "@/components/ReportsSection";
 import { SettingsSection } from "@/components/SettingsSection";
 import { PricingSection } from "@/components/PricingSection";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
-  if (!isAuthenticated) {
-    return <AuthSection onAuth={() => setIsAuthenticated(true)} />;
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось выйти из системы",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "До свидания!",
+        description: "Вы успешно вышли из системы",
+      });
+    }
+  };
+
+  if (!user) {
+    return <AuthSection onAuth={() => {}} />;
   }
 
   return (
@@ -50,9 +70,13 @@ const Index = () => {
                 <Zap className="h-3 w-3 mr-1" />
                 Pro Plan
               </Badge>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => setActiveTab("settings")}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Выйти
               </Button>
             </div>
           </div>

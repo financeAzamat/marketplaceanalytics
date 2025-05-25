@@ -9,7 +9,210 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cost_data: {
+        Row: {
+          created_at: string
+          file_name: string
+          id: string
+          status: string
+          total_amount: number
+          upload_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          id?: string
+          status?: string
+          total_amount?: number
+          upload_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          id?: string
+          status?: string
+          total_amount?: number
+          upload_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_connections: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          id: string
+          is_connected: boolean
+          last_sync_at: string | null
+          marketplace: string
+          refresh_token: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          is_connected?: boolean
+          last_sync_at?: string | null
+          marketplace: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          is_connected?: boolean
+          last_sync_at?: string | null
+          marketplace?: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          date_from: string
+          date_to: string
+          file_url: string | null
+          id: string
+          marketplace: string | null
+          report_name: string
+          report_type: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_from: string
+          date_to: string
+          file_url?: string | null
+          id?: string
+          marketplace?: string | null
+          report_name: string
+          report_type: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date_from?: string
+          date_to?: string
+          file_url?: string | null
+          id?: string
+          marketplace?: string | null
+          report_name?: string
+          report_type?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sales_data: {
+        Row: {
+          created_at: string
+          id: string
+          marketplace: string
+          orders_count: number
+          products_count: number
+          profit: number
+          revenue: number
+          sale_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          marketplace: string
+          orders_count?: number
+          products_count?: number
+          profit?: number
+          revenue?: number
+          sale_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          marketplace?: string
+          orders_count?: number
+          products_count?: number
+          profit?: number
+          revenue?: number
+          sale_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          auto_sync: boolean
+          created_at: string
+          email_notifications: boolean
+          id: string
+          sync_frequency_hours: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_sync?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          sync_frequency_hours?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_sync?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          sync_frequency_hours?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
