@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -117,6 +116,52 @@ export const AdvancedReports = () => {
       });
     },
   });
+
+  const handleDownload = async (report: any) => {
+    try {
+      // Generate sample Excel data
+      const csvContent = generateSampleCSV(report);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${report.report_name}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Файл скачан",
+        description: "Отчет успешно скачан на ваше устройство",
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка скачивания",
+        description: "Не удалось скачать отчет",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const generateSampleCSV = (report: any) => {
+    const headers = ['Дата', 'Маркетплейс', 'Продажи', 'Прибыль', 'Заказы'];
+    const sampleData = [
+      ['25.05.2025', 'Wildberries', '125000', '25000', '45'],
+      ['24.05.2025', 'Ozon', '95000', '18000', '32'],
+      ['23.05.2025', 'Wildberries', '110000', '22000', '38'],
+      ['22.05.2025', 'Ozon', '87000', '16500', '29'],
+      ['21.05.2025', 'Wildberries', '132000', '26400', '48'],
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...sampleData.map(row => row.join(','))
+    ].join('\n');
+    
+    return '\uFEFF' + csvContent; // Add BOM for proper UTF-8 encoding
+  };
 
   const getReportTypeName = (type: string) => {
     const names = {
@@ -299,7 +344,11 @@ export const AdvancedReports = () => {
                   <div className="flex items-center space-x-2">
                     {getStatusBadge(report.status)}
                     {report.status === 'generated' && (
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleDownload(report)}
+                      >
                         <Download className="h-4 w-4 mr-2" />
                         Скачать
                       </Button>
