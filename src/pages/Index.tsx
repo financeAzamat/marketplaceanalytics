@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,9 +67,9 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
-                  MarketPlace Analytics
+                  FinAz Marketplace
                 </h1>
-                <p className="text-sm text-slate-500 font-medium">Профессиональная аналитика продаж</p>
+                <p className="text-sm text-slate-500 font-medium">Профессиональная аналитика для маркетплейсов</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
