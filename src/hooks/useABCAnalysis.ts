@@ -13,6 +13,15 @@ export interface ABCItem {
   marketplace: string;
 }
 
+interface SalesDataRow {
+  id: string;
+  marketplace: string;
+  sale_date: string;
+  orders_count: number;
+  revenue: number;
+  profit: number;
+}
+
 export const useABCAnalysis = (
   analysisType: 'sales_volume' | 'revenue' | 'profit' = 'revenue',
   marketplaceFilter: string[] = []
@@ -21,27 +30,28 @@ export const useABCAnalysis = (
 
   const { data: abcItems, isLoading } = useQuery({
     queryKey: ['abc-analysis', user?.id, analysisType, marketplaceFilter],
-    queryFn: async () => {
+    queryFn: async (): Promise<ABCItem[]> => {
       if (!user?.id) return [];
       
-      // Get sales data filtered by marketplace if specified
-      let query = supabase
+      // Явно типизируем запрос
+      const query = supabase
         .from('sales_data')
-        .select('*')
+        .select('id, marketplace, sale_date, orders_count, revenue, profit')
         .eq('user_id', user.id)
         .order('sale_date', { ascending: false });
 
+      let finalQuery = query;
       if (marketplaceFilter.length > 0) {
-        query = query.in('marketplace', marketplaceFilter);
+        finalQuery = query.in('marketplace', marketplaceFilter);
       }
 
-      const { data: salesData, error } = await query;
+      const { data: salesData, error } = await finalQuery;
 
       if (error) throw error;
       if (!salesData || salesData.length === 0) return [];
 
-      // Group data by marketplace to create items (daily records become individual items)
-      const items: Omit<ABCItem, 'category'>[] = salesData.map(record => ({
+      // Преобразуем данные с явной типизацией
+      const items: Omit<ABCItem, 'category'>[] = (salesData as SalesDataRow[]).map(record => ({
         id: record.id,
         name: `${record.marketplace} - ${new Date(record.sale_date).toLocaleDateString('ru-RU')}`,
         sales_volume: record.orders_count,
