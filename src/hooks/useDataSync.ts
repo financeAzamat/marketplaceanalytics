@@ -35,17 +35,41 @@ export const useDataSync = () => {
     },
   });
 
+  // Функция для получения существующих дат в БД
+  const getExistingDates = async (marketplace: 'WB' | 'OZON', dateFrom?: string, dateTo?: string) => {
+    let query = supabase
+      .from('sales_data')
+      .select('sale_date')
+      .eq('marketplace', marketplace);
+
+    if (dateFrom) {
+      query = query.gte('sale_date', dateFrom);
+    }
+    if (dateTo) {
+      query = query.lte('sale_date', dateTo);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    
+    return new Set(data?.map(item => item.sale_date) || []);
+  };
+
   const syncMarketplaceMutation = useMutation({
     mutationFn: async ({ marketplace, dateFrom, dateTo }: { 
       marketplace: 'WB' | 'OZON'; 
       dateFrom?: string; 
       dateTo?: string; 
     }) => {
-      console.log('Starting real API sync for marketplace:', marketplace, 'from:', dateFrom, 'to:', dateTo);
+      console.log('Starting optimized API sync for marketplace:', marketplace, 'from:', dateFrom || 'all time', 'to:', dateTo || 'all time');
       
       setSyncProgress(prev => ({ ...prev, [marketplace]: 10 }));
       
       try {
+        // Получаем уже существующие даты в БД
+        const existingDates = await getExistingDates(marketplace, dateFrom, dateTo);
+        console.log('Existing dates in DB:', existingDates.size);
+
         // Get connection details with API keys
         const { data: connection, error: connectionError } = await supabase
           .from('marketplace_connections')
@@ -70,8 +94,12 @@ export const useDataSync = () => {
 
         setSyncProgress(prev => ({ ...prev, [marketplace]: 70 }));
 
-        // Process and save data
-        const processedData = salesData.map(item => ({
+        // Фильтруем данные, исключая уже существующие в БД
+        const newSalesData = salesData.filter(item => !existingDates.has(item.date));
+        console.log('New data to save:', newSalesData.length, 'of', salesData.length, 'total records');
+
+        // Process only new data
+        const processedData = newSalesData.map(item => ({
           marketplace,
           sale_date: item.date,
           revenue: parseFloat(item.revenue.toFixed(2)),
@@ -80,27 +108,26 @@ export const useDataSync = () => {
           products_count: item.products,
         }));
 
-        console.log('Processed data from API:', processedData.length, 'records');
-        
         setSyncProgress(prev => ({ ...prev, [marketplace]: 90 }));
 
-        // Use upsert to handle existing records
-        const { error: upsertError } = await supabase
-          .from('sales_data')
-          .upsert(processedData, {
-            onConflict: 'marketplace,sale_date',
-            ignoreDuplicates: false
-          });
-        
-        if (upsertError) {
-          console.error('Upsert error:', upsertError);
-          throw upsertError;
+        if (processedData.length > 0) {
+          // Используем обычный insert для новых данных
+          const { error: insertError } = await supabase
+            .from('sales_data')
+            .insert(processedData);
+          
+          if (insertError) {
+            console.error('Insert error:', insertError);
+            throw insertError;
+          }
+          
+          console.log('Successfully saved new API data:', processedData.length, 'records');
+        } else {
+          console.log('No new data to save - all data already exists in DB');
         }
         
-        console.log('Successfully saved real API data');
-        
         setSyncProgress(prev => ({ ...prev, [marketplace]: 100 }));
-        return { marketplace, recordsCount: processedData.length };
+        return { marketplace, recordsCount: processedData.length, totalRecords: salesData.length };
 
       } catch (error) {
         console.error('API sync error:', error);
@@ -108,9 +135,13 @@ export const useDataSync = () => {
       }
     },
     onSuccess: (data) => {
+      const message = data.recordsCount > 0 
+        ? `${data.marketplace}: добавлено ${data.recordsCount} новых записей из ${data.totalRecords} полученных`
+        : `${data.marketplace}: все данные уже актуальны (${data.totalRecords} записей проверено)`;
+      
       toast({
         title: "Синхронизация завершена",
-        description: `${data.marketplace}: обновлено ${data.recordsCount} записей из реального API`,
+        description: message,
       });
       queryClient.invalidateQueries({ queryKey: ['sync-statuses'] });
       queryClient.invalidateQueries({ queryKey: ['sales-data'] });
@@ -160,10 +191,11 @@ export const useDataSync = () => {
 async function fetchWildberriesData(apiKey: string, dateFrom?: string, dateTo?: string) {
   console.log('Fetching data from Wildberries API...');
   
+  // Если период не указан, берем данные за последние 90 дней (максимум для WB API)
   const endDate = dateTo ? new Date(dateTo) : new Date();
   const startDate = dateFrom ? new Date(dateFrom) : new Date();
   if (!dateFrom) {
-    startDate.setDate(endDate.getDate() - 30);
+    startDate.setDate(endDate.getDate() - 90); // WB API ограничение
   }
   
   try {
@@ -222,7 +254,7 @@ async function fetchWildberriesData(apiKey: string, dateFrom?: string, dateTo?: 
   } catch (error) {
     console.error('Wildberries API fetch error:', error);
     // В случае ошибки API возвращаем тестовые данные
-    return generateMockData('WB');
+    return generateMockData('WB', dateFrom, dateTo);
   }
 }
 
@@ -230,6 +262,7 @@ async function fetchWildberriesData(apiKey: string, dateFrom?: string, dateTo?: 
 async function fetchOzonData(apiKey: string, clientId: string, dateFrom?: string, dateTo?: string) {
   console.log('Fetching data from Ozon API...');
   
+  // Если период не указан, берем данные за последние 30 дней
   const endDate = dateTo ? new Date(dateTo) : new Date();
   const startDate = dateFrom ? new Date(dateFrom) : new Date();
   if (!dateFrom) {
@@ -289,30 +322,38 @@ async function fetchOzonData(apiKey: string, clientId: string, dateFrom?: string
   } catch (error) {
     console.error('Ozon API fetch error:', error);
     // В случае ошибки API возвращаем тестовые данные
-    return generateMockData('OZON');
+    return generateMockData('OZON', dateFrom, dateTo);
   }
 }
 
 // Функция для генерации тестовых данных (fallback)
-function generateMockData(marketplace: string) {
+function generateMockData(marketplace: string, dateFrom?: string, dateTo?: string) {
   console.log(`Generating mock data for ${marketplace} as fallback`);
   
+  // Определяем период для тестовых данных
+  const endDate = dateTo ? new Date(dateTo) : new Date();
+  const startDate = dateFrom ? new Date(dateFrom) : new Date();
+  if (!dateFrom) {
+    startDate.setDate(endDate.getDate() - 30);
+  }
+
   const salesData = [];
-  for (let i = 0; i < 30; i++) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    
+  const currentDate = new Date(startDate);
+  
+  while (currentDate <= endDate) {
     const orders = Math.floor(Math.random() * 50) + 10;
     const revenue = orders * (Math.random() * 2000 + 500);
     const profit = revenue * (0.15 + Math.random() * 0.25);
     
     salesData.push({
-      date: date.toISOString().split('T')[0],
+      date: currentDate.toISOString().split('T')[0],
       revenue: parseFloat(revenue.toFixed(2)),
       profit: parseFloat(profit.toFixed(2)),
       orders,
       products: Math.floor(orders * (1.2 + Math.random() * 0.8)),
     });
+    
+    currentDate.setDate(currentDate.getDate() + 1);
   }
   
   return salesData;

@@ -21,6 +21,7 @@ export const useSalesData = (dateFrom?: string, dateTo?: string, marketplace?: s
         .select('*')
         .order('sale_date', { ascending: false });
 
+      // Применяем фильтры только если они указаны
       if (dateFrom) {
         query = query.gte('sale_date', dateFrom);
       }
@@ -37,6 +38,26 @@ export const useSalesData = (dateFrom?: string, dateTo?: string, marketplace?: s
     },
   });
 
+  // Функция для проверки существующих данных в БД
+  const checkExistingData = async (marketplace: string, dateFrom?: string, dateTo?: string) => {
+    let query = supabase
+      .from('sales_data')
+      .select('sale_date')
+      .eq('marketplace', marketplace);
+
+    if (dateFrom) {
+      query = query.gte('sale_date', dateFrom);
+    }
+    if (dateTo) {
+      query = query.lte('sale_date', dateTo);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    
+    return data?.map(item => item.sale_date) || [];
+  };
+
   const addSalesData = async (data: Omit<SalesDataEntry, 'id'>) => {
     const { error } = await supabase
       .from('sales_data')
@@ -50,6 +71,7 @@ export const useSalesData = (dateFrom?: string, dateTo?: string, marketplace?: s
     salesData: salesData || [],
     isLoading,
     addSalesData,
+    checkExistingData,
     refetch,
   };
 };
