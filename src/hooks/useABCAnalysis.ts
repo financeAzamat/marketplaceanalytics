@@ -29,29 +29,29 @@ export const useABCAnalysis = (
   const { user } = useAuth();
 
   const { data: abcItems, isLoading } = useQuery({
-    queryKey: ['abc-analysis', user?.id, analysisType, marketplaceFilter],
+    queryKey: ['abc-analysis', analysisType, marketplaceFilter],
     queryFn: async (): Promise<ABCItem[]> => {
-      if (!user?.id) return [];
-      
-      // Явно типизируем запрос
-      const query = supabase
+      // Простой запрос без фильтрации по user_id для MVP
+      let query = supabase
         .from('sales_data')
         .select('id, marketplace, sale_date, orders_count, revenue, profit')
-        .eq('user_id', user.id)
         .order('sale_date', { ascending: false });
 
-      let finalQuery = query;
       if (marketplaceFilter.length > 0) {
-        finalQuery = query.in('marketplace', marketplaceFilter);
+        query = query.in('marketplace', marketplaceFilter);
       }
 
-      const { data: salesData, error } = await finalQuery;
+      const { data: salesData, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching sales data:', error);
+        return [];
+      }
+      
       if (!salesData || salesData.length === 0) return [];
 
       // Преобразуем данные с явной типизацией
-      const items: Omit<ABCItem, 'category'>[] = (salesData as SalesDataRow[]).map(record => ({
+      const items: Omit<ABCItem, 'category'>[] = salesData.map(record => ({
         id: record.id,
         name: `${record.marketplace} - ${new Date(record.sale_date).toLocaleDateString('ru-RU')}`,
         sales_volume: record.orders_count,
@@ -88,7 +88,7 @@ export const useABCAnalysis = (
 
       return categorizedItems;
     },
-    enabled: !!user?.id,
+    enabled: true, // Всегда включен для MVP
   });
 
   // Calculate category summaries
