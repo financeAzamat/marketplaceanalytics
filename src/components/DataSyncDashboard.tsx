@@ -37,6 +37,10 @@ export const DataSyncDashboard = () => {
     return <Badge variant="destructive">Не подключен</Badge>;
   };
 
+  const handleSyncAll = () => {
+    syncAllMarketplaces();
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -57,7 +61,7 @@ export const DataSyncDashboard = () => {
               <span>Синхронизация данных</span>
             </CardTitle>
             <Button 
-              onClick={syncAllMarketplaces}
+              onClick={handleSyncAll}
               disabled={isSyncing}
               size="sm"
             >
