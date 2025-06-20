@@ -25,6 +25,39 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const checkWildberriesConnection = async (apiKeyToCheck: string) => {
+    try {
+      console.log('Checking Wildberries API connection...');
+      
+      const response = await fetch('https://common-api.wildberries.ru/ping', {
+        method: 'GET',
+        headers: {
+          'Authorization': apiKeyToCheck,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('Wildberries API response:', data);
+      
+      if (data.Status === 'OK') {
+        return { success: true, message: 'Подключение успешно' };
+      } else {
+        return { success: false, message: 'Получен неожиданный ответ от API' };
+      }
+    } catch (error: any) {
+      console.error('Wildberries API connection error:', error);
+      return { 
+        success: false, 
+        message: `Ошибка подключения: ${error.message || 'Неизвестная ошибка'}` 
+      };
+    }
+  };
+
   const handleSave = async () => {
     if (!user?.id) return;
     if (!apiKey.trim()) {
@@ -38,6 +71,26 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
 
     setIsLoading(true);
     try {
+      // Проверяем подключение для Wildberries
+      if (marketplace === 'wildberries') {
+        const connectionResult = await checkWildberriesConnection(apiKey);
+        
+        if (!connectionResult.success) {
+          toast({
+            title: "Ошибка подключения",
+            description: `${connectionResult.message}. Проверьте правильность API ключа и повторите попытку.`,
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        toast({
+          title: "Подключение проверено",
+          description: "API ключ Wildberries работает корректно",
+        });
+      }
+
       // First check if connection exists
       const { data: existingConnection } = await supabase
         .from('marketplace_connections')
@@ -79,7 +132,7 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
 
       toast({
         title: "Успешно сохранено",
-        description: `API ключи для ${marketplace === 'wildberries' ? 'Wildberries' : 'Ozon'} сохранены`,
+        description: `API ключи для ${marketplace === 'wildberries' ? 'Wildberries' : 'Ozon'} сохранены и подключение установлено`,
       });
 
       onSuccess();
@@ -102,12 +155,12 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
     if (marketplace === 'wildberries') {
       return {
         title: 'Подключение Wildberries',
-        instructions: 'Для подключения к Wildberries вам потребуется API ключ из личного кабинета продавца.',
+        instructions: 'Для подключения к Wildberries вам потребуется API ключ из личного кабинета продавца. При сохранении будет проверено подключение к API.',
         apiKeyLabel: 'API ключ Wildberries',
         apiKeyPlaceholder: 'Введите ваш API ключ',
         clientIdLabel: 'Client ID (опционально)',
         clientIdPlaceholder: 'Введите Client ID если требуется',
-        docsLink: 'https://openapi.wildberries.ru/',
+        docsLink: 'https://dev.wildberries.ru/openapi/api-information',
         gradient: 'from-purple-500 to-pink-600',
       };
     } else {
@@ -207,7 +260,7 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
               disabled={isLoading}
               className={`bg-gradient-to-r ${config.gradient} text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50`}
             >
-              {isLoading ? 'Сохранение...' : 'Сохранить'}
+              {isLoading ? 'Проверка подключения...' : 'Сохранить'}
             </Button>
           </div>
 
