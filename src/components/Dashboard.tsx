@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, TrendingUp, DollarSign, ShoppingCart, Upload } from "lucide-react";
+import { BarChart3, TrendingUp, Currency, ShoppingCart, Upload } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useSalesData } from '@/hooks/useSalesData';
 import { useCostData } from '@/hooks/useCostData';
@@ -86,7 +85,7 @@ export const Dashboard = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium opacity-90">Выручка</CardTitle>
-              <DollarSign className="h-4 w-4 opacity-75" />
+              <Currency className="h-4 w-4 opacity-75" />
             </div>
           </CardHeader>
           <CardContent>
