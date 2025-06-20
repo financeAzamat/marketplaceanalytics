@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -56,7 +55,15 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
   };
 
   const handleSave = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast({
+        title: "Ошибка",
+        description: "Пользователь не аутентифицирован",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (!apiKey.trim()) {
       toast({
         title: "Ошибка",
@@ -88,48 +95,56 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
         });
       }
 
-      // Преобразуем marketplace в константы
       const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
 
-      // First check if connection exists
-      const { data: existingConnection } = await supabase
+      // Check if connection exists first
+      const { data: existingConnection, error: selectError } = await supabase
         .from('marketplace_connections')
         .select('id')
         .eq('user_id', user.id)
         .eq('marketplace', marketplaceCode)
-        .single();
+        .maybeSingle();
+
+      if (selectError) {
+        console.error('Error checking existing connection:', selectError);
+        throw selectError;
+      }
+
+      const connectionData = {
+        user_id: user.id,
+        marketplace: marketplaceCode,
+        is_connected: true,
+        user_api_key: apiKey,
+        access_token: null,
+        refresh_token: null,
+        token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
       if (existingConnection) {
         // Update existing connection
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from('marketplace_connections')
-          .update({
-            is_connected: true,
-            user_api_key: apiKey,
-            access_token: null,
-            refresh_token: null,
-            token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('user_id', user.id)
-          .eq('marketplace', marketplaceCode);
+          .update(connectionData)
+          .eq('id', existingConnection.id);
 
-        if (error) throw error;
+        if (updateError) {
+          console.error('Update error:', updateError);
+          throw updateError;
+        }
       } else {
         // Insert new connection
-        const { error } = await supabase
+        const { error: insertError } = await supabase
           .from('marketplace_connections')
           .insert({
-            user_id: user.id,
-            marketplace: marketplaceCode,
-            is_connected: true,
-            user_api_key: apiKey,
-            access_token: null,
-            refresh_token: null,
-            token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+            ...connectionData,
+            created_at: new Date().toISOString(),
           });
 
-        if (error) throw error;
+        if (insertError) {
+          console.error('Insert error:', insertError);
+          throw insertError;
+        }
       }
 
       toast({
@@ -141,6 +156,7 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
       onOpenChange(false);
       setApiKey('');
     } catch (error: any) {
+      console.error('Save error:', error);
       toast({
         title: "Ошибка сохранения",
         description: error.message || "Не удалось сохранить API ключи",
