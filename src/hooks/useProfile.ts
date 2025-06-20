@@ -1,52 +1,49 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useState } from 'react';
+import { useToast } from './use-toast';
 
+// Простой хук для MVP без Supabase
 export const useProfile = () => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+  // Имитируем профиль из localStorage
+  const profile = {
+    id: 'demo-user',
+    full_name: localStorage.getItem('fullName') || '',
+    company_name: localStorage.getItem('companyName') || '',
+    email: localStorage.getItem('email') || 'demo@example.com',
+  };
 
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
+  const updateProfile = async (updates: { full_name?: string; company_name?: string }) => {
+    setIsUpdating(true);
+    try {
+      if (updates.full_name !== undefined) {
+        localStorage.setItem('fullName', updates.full_name);
+      }
+      if (updates.company_name !== undefined) {
+        localStorage.setItem('companyName', updates.company_name);
+      }
 
-  const updateProfileMutation = useMutation({
-    mutationFn: async (updates: { full_name?: string; company_name?: string }) => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-    },
-  });
+      toast({
+        title: "Профиль обновлен",
+        description: "Данные успешно сохранены",
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить профиль",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return {
     profile,
-    isLoading,
-    updateProfile: updateProfileMutation.mutate,
-    isUpdating: updateProfileMutation.isPending,
+    isLoading: false,
+    updateProfile,
+    isUpdating,
   };
 };

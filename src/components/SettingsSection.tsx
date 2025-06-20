@@ -7,68 +7,28 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
 
 export const SettingsSection = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  // Fetch user profile and settings
-  const { data: profile } = useQuery({
-    queryKey: ['profile', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const { data: settings, refetch: refetchSettings } = useQuery({
-    queryKey: ['user-settings', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
+  // Для MVP используем локальное состояние
   const [formData, setFormData] = useState({
-    fullName: profile?.full_name || '',
-    companyName: profile?.company_name || '',
-    emailNotifications: settings?.email_notifications ?? true,
-    autoSync: settings?.auto_sync ?? true,
-    syncFrequency: settings?.sync_frequency_hours || 6,
+    fullName: localStorage.getItem('fullName') || '',
+    companyName: localStorage.getItem('companyName') || '',
+    email: localStorage.getItem('email') || 'demo@example.com',
+    emailNotifications: localStorage.getItem('emailNotifications') !== 'false',
+    autoSync: localStorage.getItem('autoSync') !== 'false',
+    syncFrequency: parseInt(localStorage.getItem('syncFrequency') || '6'),
   });
 
   const handleSaveProfile = async () => {
-    if (!user?.id) return;
-    
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: formData.fullName,
-          company_name: formData.companyName,
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
+      // Сохраняем в localStorage для MVP
+      localStorage.setItem('fullName', formData.fullName);
+      localStorage.setItem('companyName', formData.companyName);
+      localStorage.setItem('email', formData.email);
 
       toast({
         title: "Профиль обновлен",
@@ -77,7 +37,7 @@ export const SettingsSection = () => {
     } catch (error: any) {
       toast({
         title: "Ошибка",
-        description: error.message || "Не удалось сохранить профиль",
+        description: "Не удалось сохранить профиль",
         variant: "destructive",
       });
     } finally {
@@ -86,22 +46,12 @@ export const SettingsSection = () => {
   };
 
   const handleSaveSettings = async () => {
-    if (!user?.id) return;
-    
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('user_settings')
-        .update({
-          email_notifications: formData.emailNotifications,
-          auto_sync: formData.autoSync,
-          sync_frequency_hours: formData.syncFrequency,
-        })
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      await refetchSettings();
+      // Сохраняем в localStorage для MVP
+      localStorage.setItem('emailNotifications', formData.emailNotifications.toString());
+      localStorage.setItem('autoSync', formData.autoSync.toString());
+      localStorage.setItem('syncFrequency', formData.syncFrequency.toString());
       
       toast({
         title: "Настройки сохранены",
@@ -110,7 +60,7 @@ export const SettingsSection = () => {
     } catch (error: any) {
       toast({
         title: "Ошибка",
-        description: error.message || "Не удалось сохранить настройки",
+        description: "Не удалось сохранить настройки",
         variant: "destructive",
       });
     } finally {
@@ -147,9 +97,13 @@ export const SettingsSection = () => {
           </div>
 
           <div className="space-y-2">
-            <Label>Email</Label>
-            <Input value={user?.email || ''} disabled className="bg-gray-50" />
-            <p className="text-xs text-gray-500">Email нельзя изменить</p>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="Ваш email"
+            />
           </div>
           
           <Button onClick={handleSaveProfile} disabled={loading}>
