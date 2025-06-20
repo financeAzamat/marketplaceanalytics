@@ -1,65 +1,57 @@
 
 import { useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
 
 export interface AuthState {
   user: User | null;
   loading: boolean;
 }
 
+// Mock user for demo purposes
+const mockUser: User = {
+  id: 'demo-user-id',
+  email: 'demo@example.com',
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  aud: 'authenticated',
+  role: 'authenticated',
+  email_confirmed_at: new Date().toISOString(),
+  last_sign_in_at: new Date().toISOString(),
+  app_metadata: {},
+  user_metadata: {
+    full_name: 'Demo User'
+  },
+  identities: [],
+  factors: []
+};
+
 export const useAuth = () => {
   const [state, setState] = useState<AuthState>({
-    user: null,
-    loading: true,
+    user: mockUser,
+    loading: false,
   });
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setState({
-        user: session?.user ?? null,
-        loading: false,
-      });
+    // Set mock user immediately
+    setState({
+      user: mockUser,
+      loading: false,
     });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setState({
-          user: session?.user ?? null,
-          loading: false,
-        });
-      }
-    );
-
-    return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
-    });
-    return { data, error };
+    // Mock signup - always succeed
+    return { data: { user: mockUser, session: null }, error: null };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { data, error };
+    // Mock signin - always succeed
+    return { data: { user: mockUser, session: null }, error: null };
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    // Mock signout - always succeed
+    return { error: null };
   };
 
   return {

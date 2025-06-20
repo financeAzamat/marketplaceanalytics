@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,41 +16,15 @@ import {
   RefreshCw,
   Shield,
   Zap,
-  LogOut,
   Sparkles
 } from "lucide-react";
-import { AuthSection } from "@/components/AuthSection";
 import { Dashboard } from "@/components/Dashboard";
 import { ReportsSection } from "@/components/ReportsSection";
 import { SettingsSection } from "@/components/SettingsSection";
 import { PricingSection } from "@/components/PricingSection";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const { user, signOut } = useAuth();
-  const { toast } = useToast();
-
-  const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось выйти из системы",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "До свидания!",
-        description: "Вы успешно вышли из системы",
-      });
-    }
-  };
-
-  if (!user) {
-    return <AuthSection onAuth={() => {}} />;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
@@ -85,15 +60,6 @@ const Index = () => {
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Настройки
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleSignOut}
-                className="bg-white/60 border-slate-200/60 hover:bg-white/80 shadow-sm backdrop-blur-sm"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Выйти
               </Button>
             </div>
           </div>
