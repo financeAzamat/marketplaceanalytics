@@ -8,7 +8,6 @@ import { useSalesData } from '@/hooks/useSalesData';
 import { useCostData } from '@/hooks/useCostData';
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections';
 import { useDataSync } from '@/hooks/useDataSync';
-import { FileUpload } from './FileUpload';
 import { MarketplaceConnection } from './MarketplaceConnection';
 import { DashboardFilters } from './DashboardFilters';
 
@@ -56,17 +55,6 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <DashboardFilters
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        marketplace={marketplace}
-        onDateFromChange={setDateFrom}
-        onDateToChange={setDateTo}
-        onMarketplaceChange={setMarketplace}
-        onApplyFilters={handleApplyFilters}
-      />
-
       {/* Connection Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MarketplaceConnection
@@ -81,8 +69,16 @@ export const Dashboard = () => {
         />
       </div>
 
-      {/* File Upload */}
-      <FileUpload />
+      {/* Filters */}
+      <DashboardFilters
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        marketplace={marketplace}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        onMarketplaceChange={setMarketplace}
+        onApplyFilters={handleApplyFilters}
+      />
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
