@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, TrendingUp, DollarSign, ShoppingCart, Upload } from "lucide-react";
@@ -6,13 +7,24 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useSalesData } from '@/hooks/useSalesData';
 import { useCostData } from '@/hooks/useCostData';
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections';
+import { useDataSync } from '@/hooks/useDataSync';
 import { FileUpload } from './FileUpload';
 import { MarketplaceConnection } from './MarketplaceConnection';
+import { DashboardFilters } from './DashboardFilters';
 
 export const Dashboard = () => {
-  const { salesData, isLoading: salesLoading } = useSalesData();
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [marketplace, setMarketplace] = useState<string>('all');
+  
+  const { salesData, isLoading: salesLoading } = useSalesData(
+    dateFrom?.toISOString().split('T')[0],
+    dateTo?.toISOString().split('T')[0],
+    marketplace
+  );
   const { costData, isLoading: costLoading } = useCostData();
   const { getConnectionStatus } = useMarketplaceConnections();
+  const { syncAllMarketplaces } = useDataSync();
 
   // Calculate metrics from real data
   const totalRevenue = salesData.reduce((sum, item) => sum + Number(item.revenue), 0);
@@ -23,8 +35,8 @@ export const Dashboard = () => {
   // Prepare chart data
   const revenueData = salesData.slice(0, 7).reverse().map(item => ({
     date: new Date(item.sale_date).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' }),
-    wildberries: item.marketplace === 'wildberries' ? Number(item.revenue) : 0,
-    ozon: item.marketplace === 'ozon' ? Number(item.revenue) : 0,
+    wildberries: item.marketplace === 'WB' ? Number(item.revenue) : 0,
+    ozon: item.marketplace === 'OZON' ? Number(item.revenue) : 0,
   }));
 
   const profitData = salesData.slice(0, 7).reverse().map(item => ({
@@ -32,8 +44,29 @@ export const Dashboard = () => {
     profit: Number(item.profit),
   }));
 
+  const handleApplyFilters = () => {
+    // Trigger sync with new date parameters
+    if (dateFrom || dateTo) {
+      syncAllMarketplaces(
+        dateFrom?.toISOString().split('T')[0],
+        dateTo?.toISOString().split('T')[0]
+      );
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Filters */}
+      <DashboardFilters
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        marketplace={marketplace}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        onMarketplaceChange={setMarketplace}
+        onApplyFilters={handleApplyFilters}
+      />
+
       {/* Connection Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MarketplaceConnection
@@ -64,7 +97,10 @@ export const Dashboard = () => {
             <div className="text-2xl font-bold">
               {salesLoading ? "..." : `${totalRevenue.toLocaleString('ru-RU')} ₽`}
             </div>
-            <p className="text-xs opacity-75 mt-1">За все время</p>
+            <p className="text-xs opacity-75 mt-1">
+              {marketplace === 'all' ? 'Все маркетплейсы' : 
+               marketplace === 'WB' ? 'Wildberries' : 'Ozon'}
+            </p>
           </CardContent>
         </Card>
 
@@ -79,7 +115,10 @@ export const Dashboard = () => {
             <div className="text-2xl font-bold">
               {salesLoading ? "..." : `${totalProfit.toLocaleString('ru-RU')} ₽`}
             </div>
-            <p className="text-xs opacity-75 mt-1">За все время</p>
+            <p className="text-xs opacity-75 mt-1">
+              {marketplace === 'all' ? 'Все маркетплейсы' : 
+               marketplace === 'WB' ? 'Wildberries' : 'Ozon'}
+            </p>
           </CardContent>
         </Card>
 
@@ -94,7 +133,10 @@ export const Dashboard = () => {
             <div className="text-2xl font-bold">
               {salesLoading ? "..." : totalOrders.toLocaleString('ru-RU')}
             </div>
-            <p className="text-xs opacity-75 mt-1">Всего заказов</p>
+            <p className="text-xs opacity-75 mt-1">
+              {marketplace === 'all' ? 'Все маркетплейсы' : 
+               marketplace === 'WB' ? 'Wildberries' : 'Ozon'}
+            </p>
           </CardContent>
         </Card>
 
@@ -189,7 +231,7 @@ export const Dashboard = () => {
             </p>
           )}
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 };

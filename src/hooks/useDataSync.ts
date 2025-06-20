@@ -36,8 +36,12 @@ export const useDataSync = () => {
   });
 
   const syncMarketplaceMutation = useMutation({
-    mutationFn: async (marketplace: 'WB' | 'OZON') => {
-      console.log('Starting real API sync for marketplace:', marketplace);
+    mutationFn: async ({ marketplace, dateFrom, dateTo }: { 
+      marketplace: 'WB' | 'OZON'; 
+      dateFrom?: string; 
+      dateTo?: string; 
+    }) => {
+      console.log('Starting real API sync for marketplace:', marketplace, 'from:', dateFrom, 'to:', dateTo);
       
       setSyncProgress(prev => ({ ...prev, [marketplace]: 10 }));
       
@@ -59,9 +63,9 @@ export const useDataSync = () => {
         let salesData = [];
         
         if (marketplace === 'WB') {
-          salesData = await fetchWildberriesData(connection.user_api_key);
+          salesData = await fetchWildberriesData(connection.user_api_key, dateFrom, dateTo);
         } else if (marketplace === 'OZON') {
-          salesData = await fetchOzonData(connection.user_api_key, null);
+          salesData = await fetchOzonData(connection.user_api_key, null, dateFrom, dateTo);
         }
 
         setSyncProgress(prev => ({ ...prev, [marketplace]: 70 }));
@@ -123,17 +127,21 @@ export const useDataSync = () => {
     onSettled: (data, error, variables) => {
       setSyncProgress(prev => {
         const newProgress = { ...prev };
-        delete newProgress[variables];
+        delete newProgress[variables.marketplace];
         return newProgress;
       });
     },
   });
 
-  const syncAllMarketplaces = async () => {
+  const syncAllMarketplaces = async (dateFrom?: string, dateTo?: string) => {
     const connectedMarketplaces = syncStatuses?.filter(s => s.isConnected) || [];
     
     for (const status of connectedMarketplaces) {
-      await syncMarketplaceMutation.mutateAsync(status.marketplace);
+      await syncMarketplaceMutation.mutateAsync({ 
+        marketplace: status.marketplace, 
+        dateFrom, 
+        dateTo 
+      });
     }
   };
 
@@ -141,19 +149,22 @@ export const useDataSync = () => {
     syncStatuses: syncStatuses || [],
     isLoading,
     syncProgress,
-    syncMarketplace: syncMarketplaceMutation.mutate,
+    syncMarketplace: (marketplace: 'WB' | 'OZON', dateFrom?: string, dateTo?: string) => 
+      syncMarketplaceMutation.mutate({ marketplace, dateFrom, dateTo }),
     syncAllMarketplaces,
     isSyncing: syncMarketplaceMutation.isPending,
   };
 };
 
 // Обновленная функция для получения данных с Wildberries API
-async function fetchWildberriesData(apiKey: string) {
+async function fetchWildberriesData(apiKey: string, dateFrom?: string, dateTo?: string) {
   console.log('Fetching data from Wildberries API...');
   
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(endDate.getDate() - 30);
+  const endDate = dateTo ? new Date(dateTo) : new Date();
+  const startDate = dateFrom ? new Date(dateFrom) : new Date();
+  if (!dateFrom) {
+    startDate.setDate(endDate.getDate() - 30);
+  }
   
   try {
     // Используем правильный endpoint для получения детализированных данных по продажам
@@ -216,12 +227,14 @@ async function fetchWildberriesData(apiKey: string) {
 }
 
 // Функция для получения данных с Ozon API
-async function fetchOzonData(apiKey: string, clientId: string) {
+async function fetchOzonData(apiKey: string, clientId: string, dateFrom?: string, dateTo?: string) {
   console.log('Fetching data from Ozon API...');
   
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(endDate.getDate() - 30);
+  const endDate = dateTo ? new Date(dateTo) : new Date();
+  const startDate = dateFrom ? new Date(dateFrom) : new Date();
+  if (!dateFrom) {
+    startDate.setDate(endDate.getDate() - 30);
+  }
   
   try {
     // API для получения статистики продаж Ozon

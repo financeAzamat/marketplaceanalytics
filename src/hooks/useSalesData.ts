@@ -12,9 +12,9 @@ export interface SalesDataEntry {
   products_count: number;
 }
 
-export const useSalesData = (dateFrom?: string, dateTo?: string) => {
+export const useSalesData = (dateFrom?: string, dateTo?: string, marketplace?: string) => {
   const { data: salesData, isLoading, refetch } = useQuery({
-    queryKey: ['sales-data', dateFrom, dateTo],
+    queryKey: ['sales-data', dateFrom, dateTo, marketplace],
     queryFn: async () => {
       let query = supabase
         .from('sales_data')
@@ -26,6 +26,9 @@ export const useSalesData = (dateFrom?: string, dateTo?: string) => {
       }
       if (dateTo) {
         query = query.lte('sale_date', dateTo);
+      }
+      if (marketplace && marketplace !== 'all') {
+        query = query.eq('marketplace', marketplace);
       }
 
       const { data, error } = await query;
