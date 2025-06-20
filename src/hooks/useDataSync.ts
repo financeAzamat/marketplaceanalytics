@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +28,7 @@ export const useDataSync = () => {
       
       return data.map(conn => ({
         marketplace: conn.marketplace as 'WB' | 'OZON',
-        lastSync: null, // Убираем last_sync_at так как колонка удалена
+        lastSync: null,
         isConnected: conn.is_connected,
         syncInProgress: false,
       }));
@@ -146,7 +147,7 @@ export const useDataSync = () => {
   };
 };
 
-// Функция для получения данных с Wildberries API
+// Обновленная функция для получения данных с Wildberries API
 async function fetchWildberriesData(apiKey: string) {
   console.log('Fetching data from Wildberries API...');
   
@@ -155,7 +156,7 @@ async function fetchWildberriesData(apiKey: string) {
   startDate.setDate(endDate.getDate() - 30);
   
   try {
-    // API для получения статистики продаж Wildberries
+    // Используем правильный endpoint для получения детализированных данных по продажам
     const response = await fetch(`https://statistics-api.wildberries.ru/api/v1/supplier/reportDetailByPeriod?dateFrom=${startDate.toISOString().split('T')[0]}&dateTo=${endDate.toISOString().split('T')[0]}`, {
       headers: {
         'Authorization': apiKey,
@@ -170,12 +171,13 @@ async function fetchWildberriesData(apiKey: string) {
     const data = await response.json();
     console.log('Wildberries API response:', data);
 
-    // Группируем данные по дням
+    // Группируем данные по дням согласно структуре API
     const groupedData = {};
     
     if (data && Array.isArray(data)) {
       data.forEach(item => {
-        const date = item.date?.split('T')[0] || item.rr_dt?.split('T')[0];
+        // Используем sale_dt как дату продажи
+        const date = item.sale_dt?.split('T')[0];
         if (!date) return;
         
         if (!groupedData[date]) {
@@ -188,15 +190,24 @@ async function fetchWildberriesData(apiKey: string) {
           };
         }
         
-        // Суммируем данные по дню
-        groupedData[date].revenue += parseFloat(item.retail_amount || item.ppvz_for_pay || 0);
-        groupedData[date].profit += parseFloat(item.supplier_reward || item.profit || 0);
-        groupedData[date].orders += parseInt(item.quantity || 1);
-        groupedData[date].products += parseInt(item.quantity || 1);
+        // Суммируем данные по дню согласно документации API
+        // retail_amount - розничная стоимость товара (выручка)
+        groupedData[date].revenue += parseFloat(item.retail_amount || 0);
+        
+        // supplier_reward - вознаграждение поставщика (чистая прибыль)
+        groupedData[date].profit += parseFloat(item.supplier_reward || 0);
+        
+        // quantity - количество проданных товаров
+        const quantity = parseInt(item.quantity || 1);
+        groupedData[date].orders += quantity;
+        groupedData[date].products += quantity;
       });
     }
 
-    return Object.values(groupedData);
+    const result = Object.values(groupedData);
+    console.log('Processed Wildberries data:', result.length, 'days');
+    return result;
+    
   } catch (error) {
     console.error('Wildberries API fetch error:', error);
     // В случае ошибки API возвращаем тестовые данные
