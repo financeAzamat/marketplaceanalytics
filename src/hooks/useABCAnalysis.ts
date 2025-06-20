@@ -1,7 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 
 export interface ABCItem {
   id: string;
@@ -13,25 +12,13 @@ export interface ABCItem {
   marketplace: string;
 }
 
-interface SalesDataRow {
-  id: string;
-  marketplace: string;
-  sale_date: string;
-  orders_count: number;
-  revenue: number;
-  profit: number;
-}
-
 export const useABCAnalysis = (
   analysisType: 'sales_volume' | 'revenue' | 'profit' = 'revenue',
   marketplaceFilter: string[] = []
 ) => {
-  const { user } = useAuth();
-
   const { data: abcItems, isLoading } = useQuery({
     queryKey: ['abc-analysis', analysisType, marketplaceFilter],
     queryFn: async (): Promise<ABCItem[]> => {
-      // Простой запрос без фильтрации по user_id для MVP
       let query = supabase
         .from('sales_data')
         .select('id, marketplace, sale_date, orders_count, revenue, profit')
@@ -88,7 +75,7 @@ export const useABCAnalysis = (
 
       return categorizedItems;
     },
-    enabled: true, // Всегда включен для MVP
+    enabled: true,
   });
 
   // Calculate category summaries

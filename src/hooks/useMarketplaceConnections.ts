@@ -4,9 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useMarketplaceConnections = () => {
   const { data: connections, isLoading } = useQuery({
-    queryKey: ['marketplace-connections-all'],
+    queryKey: ['marketplace-connections'],
     queryFn: async () => {
-      // Получаем все подключения без фильтрации по пользователю
       const { data, error } = await supabase
         .from('marketplace_connections')
         .select('*');

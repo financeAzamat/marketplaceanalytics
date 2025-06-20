@@ -1,14 +1,7 @@
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
-
-interface ConnectionStatus {
-  marketplace: 'WB' | 'OZON';
-  isConnected: boolean;
-  lastChecked: Date;
-  apiKey: string;
-}
 
 export const useConnectionStatus = () => {
   const [isChecking, setIsChecking] = useState(false);
