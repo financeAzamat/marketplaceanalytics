@@ -93,26 +93,26 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
 
       const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
 
-      // Сначала ищем существующий API ключ в БД
+      // Сначала ищем существующую запись для этого маркетплейса
       const { data: existingConnection, error: searchError } = await supabase
         .from('marketplace_connections')
         .select('id')
-        .eq('user_api_key', apiKey)
         .eq('marketplace', marketplaceCode)
         .maybeSingle();
 
       if (searchError) {
-        console.error('Error searching for existing API key:', searchError);
+        console.error('Error searching for existing connection:', searchError);
         throw searchError;
       }
 
       if (existingConnection) {
-        // API ключ уже существует - обновляем существующую запись
+        // Обновляем существующую запись
         console.log('Updating existing connection:', existingConnection.id);
         
         const { error: updateError } = await supabase
           .from('marketplace_connections')
           .update({
+            user_api_key: apiKey,
             is_connected: connectionIsValid,
           })
           .eq('id', existingConnection.id);
@@ -143,7 +143,7 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
 
       toast({
         title: "Успешно сохранено",
-        description: `API ключи для ${marketplace === 'wildberries' ? 'Wildberries' : 'Ozon'} сохранены и подключение ${connectionIsValid ? 'установлено' : 'не удалось установить'}`,
+        description: `API ключ для ${marketplace === 'wildberries' ? 'Wildberries' : 'Ozon'} сохранен и подключение ${connectionIsValid ? 'установлено' : 'не удалось установить'}`,
       });
 
       onSuccess();
@@ -153,7 +153,7 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
       console.error('Save error:', error);
       toast({
         title: "Ошибка сохранения",
-        description: error.message || "Не удалось сохранить API ключи",
+        description: error.message || "Не удалось сохранить API ключ",
         variant: "destructive",
       });
     } finally {

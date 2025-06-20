@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 
@@ -11,7 +11,6 @@ interface ConnectionStatus {
 }
 
 export const useConnectionStatus = () => {
-  const [statuses, setStatuses] = useState<ConnectionStatus[]>([]);
   const [isChecking, setIsChecking] = useState(false);
   const { toast } = useToast();
 
@@ -41,7 +40,7 @@ export const useConnectionStatus = () => {
     }
   };
 
-  // Проверка API ключа Ozon (заглушка - нужен реальный endpoint)
+  // Проверка API ключа Ozon (заглушка)
   const checkOzonConnection = async (apiKey: string): Promise<boolean> => {
     try {
       // Здесь должен быть реальный Ozon API endpoint для проверки
@@ -78,106 +77,61 @@ export const useConnectionStatus = () => {
     }
   };
 
-  // Проверка всех активных подключений
-  const checkAllConnections = useCallback(async () => {
+  // Проверка конкретного подключения по требованию
+  const checkSpecificConnection = async (marketplace: 'wildberries' | 'ozon') => {
     setIsChecking(true);
+    const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
     
     try {
-      // Получаем все подключения с API ключами
-      const { data: connections, error } = await supabase
+      const { data: connection } = await supabase
         .from('marketplace_connections')
         .select('*')
-        .not('user_api_key', 'is', null);
+        .eq('marketplace', marketplaceCode)
+        .single();
 
-      if (error) {
-        console.error('Error fetching connections:', error);
-        return;
-      }
-
-      const newStatuses: ConnectionStatus[] = [];
-      let hasChanges = false;
-
-      for (const connection of connections || []) {
-        const isConnected = await checkSingleConnection(
-          connection.marketplace as 'WB' | 'OZON',
-          connection.user_api_key
-        );
-
-        // Обновляем статус в БД если изменился
-        if (connection.is_connected !== isConnected) {
-          await updateConnectionStatus(connection.id, isConnected);
-          hasChanges = true;
-          
-          // Показываем уведомление при изменении статуса
-          const marketplaceName = connection.marketplace === 'WB' ? 'Wildberries' : 'Ozon';
+      if (connection?.user_api_key) {
+        const isConnected = await checkSingleConnection(marketplaceCode, connection.user_api_key);
+        
+        // Обновляем статус в БД
+        await updateConnectionStatus(connection.id, isConnected);
+        
+        if (isConnected) {
           toast({
-            title: isConnected ? "Подключение восстановлено" : "Подключение потеряно",
-            description: `${marketplaceName}: ${isConnected ? 'API работает корректно' : 'API недоступен'}`,
-            variant: isConnected ? "default" : "destructive",
+            title: "Подключение активно",
+            description: `${marketplace === 'wildberries' ? 'Wildberries' : 'Ozon'}: API работает корректно`,
+          });
+        } else {
+          toast({
+            title: "Подключение недоступно",
+            description: `${marketplace === 'wildberries' ? 'Wildberries' : 'Ozon'}: Произошла техническая ошибка, повторите попытку позже`,
+            variant: "destructive",
           });
         }
-
-        newStatuses.push({
-          marketplace: connection.marketplace as 'WB' | 'OZON',
-          isConnected,
-          lastChecked: new Date(),
-          apiKey: connection.user_api_key,
+        
+        return isConnected;
+      } else {
+        toast({
+          title: "Ошибка",
+          description: "API ключ не найден",
+          variant: "destructive",
         });
+        return false;
       }
-
-      setStatuses(newStatuses);
-
-      // Если были изменения, обновляем кэш React Query
-      if (hasChanges) {
-        // Здесь можно инвалидировать кэш, если нужно
-      }
-
     } catch (error) {
-      console.error('Error checking connections:', error);
+      console.error('Error checking connection:', error);
+      toast({
+        title: "Ошибка проверки",
+        description: "Произошла техническая ошибка, повторите попытку позже",
+        variant: "destructive",
+      });
+      return false;
     } finally {
       setIsChecking(false);
     }
-  }, [toast]);
-
-  // Автоматическая проверка каждые 5 минут
-  useEffect(() => {
-    // Проверяем сразу при загрузке
-    checkAllConnections();
-
-    // Устанавливаем интервал для периодической проверки
-    const interval = setInterval(checkAllConnections, 5 * 60 * 1000); // 5 минут
-
-    return () => clearInterval(interval);
-  }, [checkAllConnections]);
-
-  // Проверка конкретного подключения по требованию
-  const checkSpecificConnection = async (marketplace: 'wildberries' | 'ozon') => {
-    const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
-    
-    const { data: connection } = await supabase
-      .from('marketplace_connections')
-      .select('*')
-      .eq('marketplace', marketplaceCode)
-      .eq('is_connected', true)
-      .single();
-
-    if (connection?.user_api_key) {
-      const isConnected = await checkSingleConnection(marketplaceCode, connection.user_api_key);
-      
-      if (connection.is_connected !== isConnected) {
-        await updateConnectionStatus(connection.id, isConnected);
-      }
-      
-      return isConnected;
-    }
-    
-    return false;
   };
 
   return {
-    statuses,
     isChecking,
-    checkAllConnections,
     checkSpecificConnection,
     checkSingleConnection,
   };

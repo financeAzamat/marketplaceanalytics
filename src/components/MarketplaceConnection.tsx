@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, RefreshCw, Settings, Key, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { RefreshCw, Settings, Key, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections';
 import { useConnectionStatus } from '@/hooks/useConnectionStatus';
 import { useToast } from '@/hooks/use-toast';
@@ -17,11 +17,10 @@ interface MarketplaceConnectionProps {
 }
 
 export const MarketplaceConnection = ({ marketplace, name, description }: MarketplaceConnectionProps) => {
-  const { getConnectionStatus, connections } = useMarketplaceConnections();
+  const { getConnectionStatus } = useMarketplaceConnections();
   const { checkSpecificConnection, isChecking } = useConnectionStatus();
   const { toast } = useToast();
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const isConnected = getConnectionStatus(marketplace);
 
@@ -35,8 +34,7 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
           is_connected: false, 
           user_api_key: null
         })
-        .eq('marketplace', marketplaceCode)
-        .eq('is_connected', true);
+        .eq('marketplace', marketplaceCode);
 
       if (error) throw error;
 
@@ -44,6 +42,9 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
         title: "Отключено",
         description: `${name} отключен от вашего аккаунта`,
       });
+      
+      // Перезагружаем страницу для обновления статуса
+      window.location.reload();
     } catch (error: any) {
       toast({
         title: "Ошибка",
@@ -54,26 +55,11 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
   };
 
   const handleRefreshConnection = async () => {
-    setIsRefreshing(true);
-    try {
-      const connectionStatus = await checkSpecificConnection(marketplace);
-      
-      toast({
-        title: connectionStatus ? "Подключение активно" : "Подключение недоступно",
-        description: connectionStatus ? 
-          `${name}: API работает корректно` : 
-          `${name}: API недоступен, проверьте ключи`,
-        variant: connectionStatus ? "default" : "destructive",
-      });
-    } catch (error) {
-      toast({
-        title: "Ошибка проверки",
-        description: "Не удалось проверить статус подключения",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
+    await checkSpecificConnection(marketplace);
+    // Перезагружаем страницу для обновления статуса в UI
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   };
 
   const handleSuccess = () => {
@@ -116,7 +102,7 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
               <Badge className={`${getMarketplaceBadgeColor()} shadow-sm font-medium`}>
                 {isConnected ? "Подключен" : "Не подключен"}
               </Badge>
-              {(isChecking || isRefreshing) && (
+              {isChecking && (
                 <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
               )}
             </div>
@@ -147,10 +133,10 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
                   variant="outline" 
                   size="sm" 
                   onClick={handleRefreshConnection}
-                  disabled={isRefreshing}
+                  disabled={isChecking}
                   className="bg-white/60 border-slate-200/60 hover:bg-white/80 shadow-sm backdrop-blur-sm"
                 >
-                  <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`h-4 w-4 mr-1 ${isChecking ? 'animate-spin' : ''}`} />
                   Проверить
                 </Button>
               </>
