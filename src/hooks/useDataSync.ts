@@ -6,7 +6,7 @@ import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
 export interface SyncStatus {
-  marketplace: 'wildberries' | 'ozon';
+  marketplace: 'WB' | 'OZON';
   lastSync: string | null;
   isConnected: boolean;
   syncInProgress: boolean;
@@ -31,7 +31,7 @@ export const useDataSync = () => {
       if (error) throw error;
       
       return data.map(conn => ({
-        marketplace: conn.marketplace as 'wildberries' | 'ozon',
+        marketplace: conn.marketplace as 'WB' | 'OZON',
         lastSync: conn.last_sync_at,
         isConnected: conn.is_connected,
         syncInProgress: false,
@@ -41,7 +41,7 @@ export const useDataSync = () => {
   });
 
   const syncMarketplaceMutation = useMutation({
-    mutationFn: async (marketplace: 'wildberries' | 'ozon') => {
+    mutationFn: async (marketplace: 'WB' | 'OZON') => {
       if (!user?.id) throw new Error('User not authenticated');
       
       console.log('Starting real API sync for marketplace:', marketplace, 'User ID:', user.id);
@@ -52,12 +52,12 @@ export const useDataSync = () => {
         // Get connection details with API keys
         const { data: connection, error: connectionError } = await supabase
           .from('marketplace_connections')
-          .select('access_token, refresh_token')
+          .select('user_api_key, access_token, refresh_token')
           .eq('user_id', user.id)
           .eq('marketplace', marketplace)
           .single();
 
-        if (connectionError || !connection?.access_token) {
+        if (connectionError || !connection?.user_api_key) {
           throw new Error('API ключи не найдены или недействительны');
         }
 
@@ -65,10 +65,10 @@ export const useDataSync = () => {
 
         let salesData = [];
         
-        if (marketplace === 'wildberries') {
-          salesData = await fetchWildberriesData(connection.access_token);
-        } else if (marketplace === 'ozon') {
-          salesData = await fetchOzonData(connection.access_token, connection.refresh_token);
+        if (marketplace === 'WB') {
+          salesData = await fetchWildberriesData(connection.user_api_key);
+        } else if (marketplace === 'OZON') {
+          salesData = await fetchOzonData(connection.user_api_key, connection.refresh_token);
         }
 
         setSyncProgress(prev => ({ ...prev, [marketplace]: 70 }));
@@ -224,7 +224,7 @@ async function fetchWildberriesData(apiKey: string) {
   } catch (error) {
     console.error('Wildberries API fetch error:', error);
     // В случае ошибки API возвращаем тестовые данные
-    return generateMockData('wildberries');
+    return generateMockData('WB');
   }
 }
 
@@ -289,7 +289,7 @@ async function fetchOzonData(apiKey: string, clientId: string) {
   } catch (error) {
     console.error('Ozon API fetch error:', error);
     // В случае ошибки API возвращаем тестовые данные
-    return generateMockData('ozon');
+    return generateMockData('OZON');
   }
 }
 

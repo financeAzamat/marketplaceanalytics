@@ -10,6 +10,17 @@ interface MarketplaceFilterProps {
 }
 
 export const MarketplaceFilter = ({ marketplaceFilter, onMarketplaceToggle }: MarketplaceFilterProps) => {
+  const getMarketplaceName = (code: string) => {
+    switch (code) {
+      case 'WB':
+        return 'Wildberries';
+      case 'OZON':
+        return 'Ozon';
+      default:
+        return code;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -28,7 +39,7 @@ export const MarketplaceFilter = ({ marketplaceFilter, onMarketplaceToggle }: Ma
                 onCheckedChange={() => onMarketplaceToggle(marketplace)}
               />
               <label htmlFor={marketplace} className="text-sm font-medium">
-                {marketplace}
+                {getMarketplaceName(marketplace)}
               </label>
             </div>
           ))}

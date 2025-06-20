@@ -26,12 +26,19 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
   const handleDisconnect = async () => {
     if (!user?.id) return;
 
+    const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
+
     try {
       const { error } = await supabase
         .from('marketplace_connections')
-        .update({ is_connected: false, access_token: null, refresh_token: null })
+        .update({ 
+          is_connected: false, 
+          user_api_key: null, 
+          access_token: null, 
+          refresh_token: null 
+        })
         .eq('user_id', user.id)
-        .eq('marketplace', marketplace);
+        .eq('marketplace', marketplaceCode);
 
       if (error) throw error;
 
@@ -85,7 +92,7 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
                 {name}
               </CardTitle>
             </div>
-            <Badge className={`${getBadgeColor()} shadow-sm font-medium`}>
+            <Badge className={`${getMarketplaceBadgeColor()} shadow-sm font-medium`}>
               {isConnected ? "Подключен" : "Не подключен"}
             </Badge>
           </div>
@@ -142,8 +149,4 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
       />
     </>
   );
-
-  function getBadgeColor() {
-    return getMarketplaceBadgeColor();
-  }
 };

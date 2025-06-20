@@ -23,7 +23,8 @@ export const useMarketplaceConnections = () => {
   });
 
   const getConnectionStatus = (marketplace: 'wildberries' | 'ozon') => {
-    const connection = connections?.find(c => c.marketplace === marketplace);
+    const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
+    const connection = connections?.find(c => c.marketplace === marketplaceCode);
     return connection?.is_connected || false;
   };
 

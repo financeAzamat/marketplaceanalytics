@@ -92,6 +92,7 @@ export type Database = {
           refresh_token: string | null
           token_expires_at: string | null
           updated_at: string
+          user_api_key: string | null
           user_id: string
         }
         Insert: {
@@ -104,6 +105,7 @@ export type Database = {
           refresh_token?: string | null
           token_expires_at?: string | null
           updated_at?: string
+          user_api_key?: string | null
           user_id: string
         }
         Update: {
@@ -116,9 +118,18 @@ export type Database = {
           refresh_token?: string | null
           token_expires_at?: string | null
           updated_at?: string
+          user_api_key?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_journal: {
         Row: {

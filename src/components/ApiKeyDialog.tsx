@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -87,12 +88,15 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
         });
       }
 
+      // Преобразуем marketplace в константы
+      const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
+
       // First check if connection exists
       const { data: existingConnection } = await supabase
         .from('marketplace_connections')
         .select('id')
         .eq('user_id', user.id)
-        .eq('marketplace', marketplace)
+        .eq('marketplace', marketplaceCode)
         .single();
 
       if (existingConnection) {
@@ -101,13 +105,14 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
           .from('marketplace_connections')
           .update({
             is_connected: true,
-            access_token: apiKey,
+            user_api_key: apiKey,
+            access_token: null,
             refresh_token: null,
             token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', user.id)
-          .eq('marketplace', marketplace);
+          .eq('marketplace', marketplaceCode);
 
         if (error) throw error;
       } else {
@@ -116,9 +121,10 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
           .from('marketplace_connections')
           .insert({
             user_id: user.id,
-            marketplace,
+            marketplace: marketplaceCode,
             is_connected: true,
-            access_token: apiKey,
+            user_api_key: apiKey,
+            access_token: null,
             refresh_token: null,
             token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
           });
