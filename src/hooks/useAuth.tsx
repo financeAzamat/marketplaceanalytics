@@ -7,9 +7,9 @@ export interface AuthState {
   loading: boolean;
 }
 
-// Mock user for demo purposes
+// Mock user for demo purposes with valid UUID
 const mockUser: User = {
-  id: 'demo-user-id',
+  id: '550e8400-e29b-41d4-a716-446655440000', // Valid UUID format
   email: 'demo@example.com',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
