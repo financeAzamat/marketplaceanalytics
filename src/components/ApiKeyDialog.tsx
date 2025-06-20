@@ -64,6 +64,8 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
     }
 
     setIsLoading(true);
+    let connectionIsValid = false;
+    
     try {
       // Проверяем подключение для Wildberries
       if (marketplace === 'wildberries') {
@@ -79,10 +81,14 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
           return;
         }
         
+        connectionIsValid = true;
         toast({
           title: "Подключение проверено",
           description: "API ключ Wildberries работает корректно",
         });
+      } else {
+        // Для Ozon пока просто проверяем что ключ не пустой
+        connectionIsValid = apiKey.trim().length > 0;
       }
 
       const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
@@ -107,7 +113,7 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
         const { error: updateError } = await supabase
           .from('marketplace_connections')
           .update({
-            is_connected: true,
+            is_connected: connectionIsValid,
           })
           .eq('id', existingConnection.id);
 
@@ -121,7 +127,7 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
 
         const connectionData = {
           marketplace: marketplaceCode,
-          is_connected: true,
+          is_connected: connectionIsValid,
           user_api_key: apiKey,
         };
 
@@ -137,7 +143,7 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
 
       toast({
         title: "Успешно сохранено",
-        description: `API ключи для ${marketplace === 'wildberries' ? 'Wildberries' : 'Ozon'} сохранены и подключение установлено`,
+        description: `API ключи для ${marketplace === 'wildberries' ? 'Wildberries' : 'Ozon'} сохранены и подключение ${connectionIsValid ? 'установлено' : 'не удалось установить'}`,
       });
 
       onSuccess();

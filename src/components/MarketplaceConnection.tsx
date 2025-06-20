@@ -1,9 +1,11 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, RefreshCw, Settings, Key, CheckCircle, AlertCircle } from 'lucide-react';
+import { ExternalLink, RefreshCw, Settings, Key, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections';
+import { useConnectionStatus } from '@/hooks/useConnectionStatus';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ApiKeyDialog } from './ApiKeyDialog';
@@ -16,8 +18,11 @@ interface MarketplaceConnectionProps {
 
 export const MarketplaceConnection = ({ marketplace, name, description }: MarketplaceConnectionProps) => {
   const { getConnectionStatus, connections } = useMarketplaceConnections();
+  const { checkSpecificConnection, isChecking } = useConnectionStatus();
   const { toast } = useToast();
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
   const isConnected = getConnectionStatus(marketplace);
 
   const handleDisconnect = async () => {
@@ -28,9 +33,7 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
         .from('marketplace_connections')
         .update({ 
           is_connected: false, 
-          user_api_key: null, 
-          access_token: null, 
-          refresh_token: null 
+          user_api_key: null
         })
         .eq('marketplace', marketplaceCode)
         .eq('is_connected', true);
@@ -50,8 +53,30 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
     }
   };
 
-  const handleRefreshConnection = () => {
-    // Refresh connection data
+  const handleRefreshConnection = async () => {
+    setIsRefreshing(true);
+    try {
+      const connectionStatus = await checkSpecificConnection(marketplace);
+      
+      toast({
+        title: connectionStatus ? "Подключение активно" : "Подключение недоступно",
+        description: connectionStatus ? 
+          `${name}: API работает корректно` : 
+          `${name}: API недоступен, проверьте ключи`,
+        variant: connectionStatus ? "default" : "destructive",
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка проверки",
+        description: "Не удалось проверить статус подключения",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleSuccess = () => {
     window.location.reload();
   };
 
@@ -87,9 +112,14 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
                 {name}
               </CardTitle>
             </div>
-            <Badge className={`${getMarketplaceBadgeColor()} shadow-sm font-medium`}>
-              {isConnected ? "Подключен" : "Не подключен"}
-            </Badge>
+            <div className="flex items-center space-x-2">
+              <Badge className={`${getMarketplaceBadgeColor()} shadow-sm font-medium`}>
+                {isConnected ? "Подключен" : "Не подключен"}
+              </Badge>
+              {(isChecking || isRefreshing) && (
+                <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4 relative z-10">
@@ -117,10 +147,11 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
                   variant="outline" 
                   size="sm" 
                   onClick={handleRefreshConnection}
+                  disabled={isRefreshing}
                   className="bg-white/60 border-slate-200/60 hover:bg-white/80 shadow-sm backdrop-blur-sm"
                 >
-                  <RefreshCw className="h-4 w-4 mr-1" />
-                  Обновить
+                  <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Проверить
                 </Button>
               </>
             ) : (
@@ -140,7 +171,7 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
         open={apiKeyDialogOpen}
         onOpenChange={setApiKeyDialogOpen}
         marketplace={marketplace}
-        onSuccess={handleRefreshConnection}
+        onSuccess={handleSuccess}
       />
     </>
   );
