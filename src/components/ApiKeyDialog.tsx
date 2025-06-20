@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -55,15 +56,6 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
   };
 
   const handleSave = async () => {
-    if (!user?.id) {
-      toast({
-        title: "Ошибка",
-        description: "Пользователь не аутентифицирован",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     if (!apiKey.trim()) {
       toast({
         title: "Ошибка",
@@ -97,49 +89,60 @@ export const ApiKeyDialog = ({ open, onOpenChange, marketplace, onSuccess }: Api
 
       const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
 
-      // Check if connection exists first
-      const { data: existingConnection, error: selectError } = await supabase
+      // Сначала ищем существующий API ключ в БД
+      const { data: existingApiKey, error: searchError } = await supabase
         .from('marketplace_connections')
-        .select('id')
-        .eq('user_id', user.id)
+        .select('user_id, id')
+        .eq('user_api_key', apiKey)
         .eq('marketplace', marketplaceCode)
         .maybeSingle();
 
-      if (selectError) {
-        console.error('Error checking existing connection:', selectError);
-        throw selectError;
+      if (searchError) {
+        console.error('Error searching for existing API key:', searchError);
+        throw searchError;
       }
 
-      const connectionData = {
-        user_id: user.id,
-        marketplace: marketplaceCode,
-        is_connected: true,
-        user_api_key: apiKey,
-        access_token: null,
-        refresh_token: null,
-        token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+      let userIdToUse: string;
 
-      if (existingConnection) {
-        // Update existing connection
+      if (existingApiKey) {
+        // API ключ уже существует - используем существующий user_id
+        userIdToUse = existingApiKey.user_id;
+        console.log('Using existing user_id:', userIdToUse);
+        
+        // Обновляем существующую запись
         const { error: updateError } = await supabase
           .from('marketplace_connections')
-          .update(connectionData)
-          .eq('id', existingConnection.id);
+          .update({
+            is_connected: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingApiKey.id);
 
         if (updateError) {
           console.error('Update error:', updateError);
           throw updateError;
         }
       } else {
-        // Insert new connection
+        // Это первичная попытка - генерируем новый user_id
+        userIdToUse = crypto.randomUUID();
+        console.log('Generated new user_id:', userIdToUse);
+
+        // Создаем новую запись с сгенерированным user_id
+        const connectionData = {
+          user_id: userIdToUse,
+          marketplace: marketplaceCode,
+          is_connected: true,
+          user_api_key: apiKey,
+          access_token: null,
+          refresh_token: null,
+          token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
         const { error: insertError } = await supabase
           .from('marketplace_connections')
-          .insert({
-            ...connectionData,
-            created_at: new Date().toISOString(),
-          });
+          .insert(connectionData);
 
         if (insertError) {
           console.error('Insert error:', insertError);

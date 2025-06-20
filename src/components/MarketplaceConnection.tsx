@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,6 @@ import { ExternalLink, RefreshCw, Settings, Key, CheckCircle, AlertCircle } from
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { ApiKeyDialog } from './ApiKeyDialog';
 
 interface MarketplaceConnectionProps {
@@ -18,14 +16,11 @@ interface MarketplaceConnectionProps {
 
 export const MarketplaceConnection = ({ marketplace, name, description }: MarketplaceConnectionProps) => {
   const { getConnectionStatus, connections } = useMarketplaceConnections();
-  const { user } = useAuth();
   const { toast } = useToast();
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   const isConnected = getConnectionStatus(marketplace);
 
   const handleDisconnect = async () => {
-    if (!user?.id) return;
-
     const marketplaceCode = marketplace === 'wildberries' ? 'WB' : 'OZON';
 
     try {
@@ -37,8 +32,8 @@ export const MarketplaceConnection = ({ marketplace, name, description }: Market
           access_token: null, 
           refresh_token: null 
         })
-        .eq('user_id', user.id)
-        .eq('marketplace', marketplaceCode);
+        .eq('marketplace', marketplaceCode)
+        .eq('is_connected', true);
 
       if (error) throw error;
 
