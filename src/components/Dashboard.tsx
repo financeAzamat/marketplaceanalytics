@@ -85,7 +85,7 @@ export const Dashboard = () => {
         <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium opacity-90">Общая выручка</CardTitle>
+              <CardTitle className="text-sm font-medium opacity-90">Выручка</CardTitle>
               <DollarSign className="h-4 w-4 opacity-75" />
             </div>
           </CardHeader>
