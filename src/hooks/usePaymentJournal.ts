@@ -1,7 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
 export interface PaymentEntry {
@@ -17,37 +16,27 @@ export interface PaymentEntry {
 }
 
 export const usePaymentJournal = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: payments = [], isLoading } = useQuery({
-    queryKey: ['payment-journal', user?.id],
+    queryKey: ['payment-journal'],
     queryFn: async () => {
-      if (!user) return [];
-      
       const { data, error } = await supabase
         .from('payment_journal')
         .select('*')
-        .eq('user_id', user.id)
         .order('payment_date', { ascending: false });
 
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
   });
 
   const addPaymentMutation = useMutation({
     mutationFn: async (payment: PaymentEntry) => {
-      if (!user) throw new Error('User not authenticated');
-
       const { data, error } = await supabase
         .from('payment_journal')
-        .insert({
-          ...payment,
-          user_id: user.id,
-        })
+        .insert(payment)
         .select()
         .single();
 

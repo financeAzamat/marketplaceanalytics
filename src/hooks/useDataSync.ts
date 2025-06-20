@@ -1,8 +1,6 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
 export interface SyncStatus {
@@ -13,38 +11,32 @@ export interface SyncStatus {
 }
 
 export const useDataSync = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [syncProgress, setSyncProgress] = useState<{ [key: string]: number }>({});
 
   const { data: syncStatuses, isLoading } = useQuery({
-    queryKey: ['sync-statuses', user?.id],
+    queryKey: ['sync-statuses'],
     queryFn: async () => {
-      if (!user?.id) return [];
-      
       const { data, error } = await supabase
         .from('marketplace_connections')
-        .select('marketplace, last_sync_at, is_connected')
-        .eq('user_id', user.id);
+        .select('marketplace, is_connected')
+        .eq('is_connected', true);
 
       if (error) throw error;
       
       return data.map(conn => ({
         marketplace: conn.marketplace as 'WB' | 'OZON',
-        lastSync: conn.last_sync_at,
+        lastSync: null, // Убираем last_sync_at так как колонка удалена
         isConnected: conn.is_connected,
         syncInProgress: false,
       }));
     },
-    enabled: !!user?.id,
   });
 
   const syncMarketplaceMutation = useMutation({
     mutationFn: async (marketplace: 'WB' | 'OZON') => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
-      console.log('Starting real API sync for marketplace:', marketplace, 'User ID:', user.id);
+      console.log('Starting real API sync for marketplace:', marketplace);
       
       setSyncProgress(prev => ({ ...prev, [marketplace]: 10 }));
       
@@ -52,9 +44,9 @@ export const useDataSync = () => {
         // Get connection details with API keys
         const { data: connection, error: connectionError } = await supabase
           .from('marketplace_connections')
-          .select('user_api_key, access_token, refresh_token')
-          .eq('user_id', user.id)
+          .select('user_api_key')
           .eq('marketplace', marketplace)
+          .eq('is_connected', true)
           .single();
 
         if (connectionError || !connection?.user_api_key) {
@@ -68,14 +60,13 @@ export const useDataSync = () => {
         if (marketplace === 'WB') {
           salesData = await fetchWildberriesData(connection.user_api_key);
         } else if (marketplace === 'OZON') {
-          salesData = await fetchOzonData(connection.user_api_key, connection.refresh_token);
+          salesData = await fetchOzonData(connection.user_api_key, null);
         }
 
         setSyncProgress(prev => ({ ...prev, [marketplace]: 70 }));
 
         // Process and save data
         const processedData = salesData.map(item => ({
-          user_id: user.id,
           marketplace,
           sale_date: item.date,
           revenue: parseFloat(item.revenue.toFixed(2)),
@@ -92,7 +83,7 @@ export const useDataSync = () => {
         const { error: upsertError } = await supabase
           .from('sales_data')
           .upsert(processedData, {
-            onConflict: 'user_id,marketplace,sale_date',
+            onConflict: 'marketplace,sale_date',
             ignoreDuplicates: false
           });
         
@@ -102,21 +93,6 @@ export const useDataSync = () => {
         }
         
         console.log('Successfully saved real API data');
-        
-        // Update last sync time
-        const { error: updateError } = await supabase
-          .from('marketplace_connections')
-          .update({ 
-            last_sync_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id)
-          .eq('marketplace', marketplace);
-        
-        if (updateError) {
-          console.error('Update sync time error:', updateError);
-          throw updateError;
-        }
         
         setSyncProgress(prev => ({ ...prev, [marketplace]: 100 }));
         return { marketplace, recordsCount: processedData.length };

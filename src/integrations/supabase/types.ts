@@ -17,7 +17,6 @@ export type Database = {
           status: string
           total_amount: number
           upload_date: string
-          user_id: string
         }
         Insert: {
           created_at?: string
@@ -26,7 +25,6 @@ export type Database = {
           status?: string
           total_amount?: number
           upload_date?: string
-          user_id: string
         }
         Update: {
           created_at?: string
@@ -35,7 +33,6 @@ export type Database = {
           status?: string
           total_amount?: number
           upload_date?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -51,7 +48,6 @@ export type Database = {
           marketplace: string | null
           receipt_url: string | null
           updated_at: string
-          user_id: string
         }
         Insert: {
           amount: number
@@ -64,7 +60,6 @@ export type Database = {
           marketplace?: string | null
           receipt_url?: string | null
           updated_at?: string
-          user_id: string
         }
         Update: {
           amount?: number
@@ -77,59 +72,32 @@ export type Database = {
           marketplace?: string | null
           receipt_url?: string | null
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
       marketplace_connections: {
         Row: {
-          access_token: string | null
           created_at: string
           id: string
           is_connected: boolean
-          last_sync_at: string | null
           marketplace: string
-          refresh_token: string | null
-          token_expires_at: string | null
-          updated_at: string
           user_api_key: string | null
-          user_id: string
         }
         Insert: {
-          access_token?: string | null
           created_at?: string
           id?: string
           is_connected?: boolean
-          last_sync_at?: string | null
           marketplace: string
-          refresh_token?: string | null
-          token_expires_at?: string | null
-          updated_at?: string
           user_api_key?: string | null
-          user_id: string
         }
         Update: {
-          access_token?: string | null
           created_at?: string
           id?: string
           is_connected?: boolean
-          last_sync_at?: string | null
           marketplace?: string
-          refresh_token?: string | null
-          token_expires_at?: string | null
-          updated_at?: string
           user_api_key?: string | null
-          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "marketplace_connections_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       payment_journal: {
         Row: {
@@ -144,7 +112,6 @@ export type Database = {
           payment_method: string
           payment_type: string
           updated_at: string
-          user_id: string
         }
         Insert: {
           amount: number
@@ -158,7 +125,6 @@ export type Database = {
           payment_method: string
           payment_type: string
           updated_at?: string
-          user_id: string
         }
         Update: {
           amount?: number
@@ -171,34 +137,6 @@ export type Database = {
           payment_date?: string
           payment_method?: string
           payment_type?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          company_name: string | null
-          created_at: string
-          email: string
-          full_name: string | null
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          company_name?: string | null
-          created_at?: string
-          email: string
-          full_name?: string | null
-          id: string
-          updated_at?: string
-        }
-        Update: {
-          company_name?: string | null
-          created_at?: string
-          email?: string
-          full_name?: string | null
-          id?: string
           updated_at?: string
         }
         Relationships: []
@@ -214,7 +152,6 @@ export type Database = {
           report_name: string
           report_type: string
           status: string
-          user_id: string
         }
         Insert: {
           created_at?: string
@@ -226,7 +163,6 @@ export type Database = {
           report_name: string
           report_type: string
           status?: string
-          user_id: string
         }
         Update: {
           created_at?: string
@@ -238,7 +174,6 @@ export type Database = {
           report_name?: string
           report_type?: string
           status?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -253,7 +188,6 @@ export type Database = {
           revenue: number
           sale_date: string
           updated_at: string
-          user_id: string
         }
         Insert: {
           created_at?: string
@@ -265,7 +199,6 @@ export type Database = {
           revenue?: number
           sale_date: string
           updated_at?: string
-          user_id: string
         }
         Update: {
           created_at?: string
@@ -277,7 +210,6 @@ export type Database = {
           revenue?: number
           sale_date?: string
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -289,7 +221,6 @@ export type Database = {
           id: string
           sync_frequency_hours: number
           updated_at: string
-          user_id: string
         }
         Insert: {
           auto_sync?: boolean
@@ -298,7 +229,6 @@ export type Database = {
           id?: string
           sync_frequency_hours?: number
           updated_at?: string
-          user_id: string
         }
         Update: {
           auto_sync?: boolean
@@ -307,7 +237,6 @@ export type Database = {
           id?: string
           sync_frequency_hours?: number
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }

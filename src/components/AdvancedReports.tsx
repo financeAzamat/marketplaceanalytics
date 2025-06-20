@@ -5,21 +5,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { 
   FileText, 
   Download, 
   CalendarIcon, 
-  TrendingUp, 
   BarChart3,
-  PieChart,
   Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -31,7 +27,6 @@ interface ReportConfig {
 }
 
 export const AdvancedReports = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -46,33 +41,26 @@ export const AdvancedReports = () => {
   const [showDateToPicker, setShowDateToPicker] = useState(false);
 
   const { data: reports, isLoading } = useQuery({
-    queryKey: ['reports', user?.id],
+    queryKey: ['reports'],
     queryFn: async () => {
-      if (!user?.id) return [];
-      
       const { data, error } = await supabase
         .from('reports')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id,
   });
 
   const generateReportMutation = useMutation({
     mutationFn: async (config: ReportConfig) => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
       const reportName = `${getReportTypeName(config.reportType)} - ${config.marketplace === 'all' ? 'Все маркетплейсы' : config.marketplace} - ${format(config.dateFrom, 'dd.MM.yyyy', { locale: ru })}-${format(config.dateTo, 'dd.MM.yyyy', { locale: ru })}`;
       
       // Create report record
       const { data: report, error } = await supabase
         .from('reports')
         .insert({
-          user_id: user.id,
           report_name: reportName,
           report_type: config.reportType,
           marketplace: config.marketplace,
@@ -204,6 +192,7 @@ export const AdvancedReports = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
             <div className="space-y-2">
               <label className="text-sm font-medium">Тип отчета</label>
               <Select
@@ -319,6 +308,7 @@ export const AdvancedReports = () => {
         </CardContent>
       </Card>
 
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
