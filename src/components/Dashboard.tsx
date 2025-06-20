@@ -231,7 +231,7 @@ export const Dashboard = () => {
             </p>
           )}
         </CardContent>
-      </div>
+      </Card>
     </div>
   );
 };
