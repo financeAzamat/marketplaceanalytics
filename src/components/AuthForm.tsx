@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +20,7 @@ export const AuthForm = () => {
 
   const resetPassword = async (email: string) => {
     // Mock функция восстановления пароля
-    return new Promise((resolve) => {
+    return new Promise<{ error: null }>((resolve) => {
       setTimeout(() => {
         resolve({ error: null });
       }, 1000);
