@@ -11,8 +11,7 @@ export interface PaymentEntry {
   description: string;
   amount: number;
   payment_method: 'cash' | 'bank_transfer' | 'card' | 'electronic';
-  marketplace?: string;
-  invoice_number?: string;
+  marketplace: string;
 }
 
 export const usePaymentJournal = () => {

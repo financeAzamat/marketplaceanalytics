@@ -41,12 +41,11 @@ export const PaymentForm = () => {
     amount: 0,
     payment_method: 'bank_transfer',
     marketplace: '',
-    invoice_number: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.category || !formData.description || formData.amount <= 0) return;
+    if (!formData.category || !formData.description || formData.amount <= 0 || !formData.marketplace) return;
     
     addPayment(formData);
     setFormData({
@@ -57,7 +56,6 @@ export const PaymentForm = () => {
       amount: 0,
       payment_method: 'bank_transfer',
       marketplace: '',
-      invoice_number: '',
     });
   };
 
@@ -113,23 +111,40 @@ export const PaymentForm = () => {
             </Select>
           </div>
 
-          <div>
-            <Label htmlFor="category">Категория</Label>
-            <Select
-              value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Выберите категорию" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="category">Категория</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) => setFormData({ ...formData, category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите категорию" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCategories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="marketplace">Маркетплейс *</Label>
+              <Select
+                value={formData.marketplace}
+                onValueChange={(value) => setFormData({ ...formData, marketplace: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите маркетплейс" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="wildberries">Wildberries</SelectItem>
+                  <SelectItem value="ozon">Ozon</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>
@@ -160,34 +175,6 @@ export const PaymentForm = () => {
               placeholder="Описание платежа"
               required
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="marketplace">Маркетплейс (опционально)</Label>
-              <Select
-                value={formData.marketplace || 'none'}
-                onValueChange={(value) => setFormData({ ...formData, marketplace: value === 'none' ? '' : value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите маркетплейс" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Не указан</SelectItem>
-                  <SelectItem value="wildberries">Wildberries</SelectItem>
-                  <SelectItem value="ozon">Ozon</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="invoice_number">Номер счета/инвойса (опционально)</Label>
-              <Input
-                id="invoice_number"
-                value={formData.invoice_number || ''}
-                onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
-                placeholder="INV-001"
-              />
-            </div>
           </div>
 
           <Button type="submit" disabled={isAdding} className="w-full">

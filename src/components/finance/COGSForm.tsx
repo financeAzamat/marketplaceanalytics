@@ -72,7 +72,7 @@ export const COGSForm = () => {
             <h3 className="text-sm font-medium text-gray-700 border-b pb-2">
               Основная информация
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="cogs_date">Дата</Label>
                 <Input
@@ -80,19 +80,6 @@ export const COGSForm = () => {
                   type="date"
                   value={formData.cogs_date}
                   onChange={(e) => setFormData({ ...formData, cogs_date: e.target.value })}
-                  required
-                  className="h-10"
-                />
-              </div>
-              <div>
-                <Label htmlFor="unit_cost">Себестоимость единицы</Label>
-                <Input
-                  id="unit_cost"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.unit_cost || ''}
-                  onChange={(e) => setFormData({ ...formData, unit_cost: parseFloat(e.target.value) || 0 })}
                   required
                   className="h-10"
                 />
@@ -115,6 +102,19 @@ export const COGSForm = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div>
+              <Label htmlFor="unit_cost">Себестоимость единицы</Label>
+              <Input
+                id="unit_cost"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.unit_cost || ''}
+                onChange={(e) => setFormData({ ...formData, unit_cost: parseFloat(e.target.value) || 0 })}
+                required
+                className="h-10"
+              />
             </div>
           </div>
 
