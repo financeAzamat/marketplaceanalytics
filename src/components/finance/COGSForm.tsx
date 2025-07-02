@@ -126,50 +126,84 @@ export const COGSForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="product_name">Название товара</Label>
-                <Input
-                  id="product_name"
-                  type="text"
+                <Select
                   value={formData.product_name}
-                  onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
-                  placeholder="Название товара"
-                  required
-                  className="h-10"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, product_name: value })}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Выберите товар" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Футболка базовая">Футболка базовая</SelectItem>
+                    <SelectItem value="Джинсы классические">Джинсы классические</SelectItem>
+                    <SelectItem value="Кроссовки спортивные">Кроссовки спортивные</SelectItem>
+                    <SelectItem value="Платье летнее">Платье летнее</SelectItem>
+                    <SelectItem value="Куртка демисезонная">Куртка демисезонная</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="brand">Бренд</Label>
-                <Input
-                  id="brand"
-                  type="text"
+                <Select
                   value={formData.brand}
-                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                  placeholder="Бренд товара"
-                  className="h-10"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, brand: value })}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Выберите бренд" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Nike">Nike</SelectItem>
+                    <SelectItem value="Adidas">Adidas</SelectItem>
+                    <SelectItem value="Zara">Zara</SelectItem>
+                    <SelectItem value="H&M">H&M</SelectItem>
+                    <SelectItem value="Levi's">Levi's</SelectItem>
+                    <SelectItem value="Tommy Hilfiger">Tommy Hilfiger</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="subject">Предмет</Label>
-                <Input
-                  id="subject"
-                  type="text"
+                <Select
                   value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  placeholder="Предмет"
-                  className="h-10"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, subject: value })}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Выберите предмет" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Одежда">Одежда</SelectItem>
+                    <SelectItem value="Обувь">Обувь</SelectItem>
+                    <SelectItem value="Аксессуары">Аксессуары</SelectItem>
+                    <SelectItem value="Сумки">Сумки</SelectItem>
+                    <SelectItem value="Украшения">Украшения</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="size">Размер</Label>
-                <Input
-                  id="size"
-                  type="text"
+                <Select
                   value={formData.size}
-                  onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                  placeholder="Размер"
-                  className="h-10"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, size: value })}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Выберите размер" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="XS">XS</SelectItem>
+                    <SelectItem value="S">S</SelectItem>
+                    <SelectItem value="M">M</SelectItem>
+                    <SelectItem value="L">L</SelectItem>
+                    <SelectItem value="XL">XL</SelectItem>
+                    <SelectItem value="XXL">XXL</SelectItem>
+                    <SelectItem value="36">36</SelectItem>
+                    <SelectItem value="38">38</SelectItem>
+                    <SelectItem value="40">40</SelectItem>
+                    <SelectItem value="42">42</SelectItem>
+                    <SelectItem value="44">44</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -182,38 +216,59 @@ export const COGSForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="supplier_article">Артикул поставщика</Label>
-                <Input
-                  id="supplier_article"
-                  type="text"
+                <Select
                   value={formData.supplier_article}
-                  onChange={(e) => setFormData({ ...formData, supplier_article: e.target.value })}
-                  placeholder="Артикул поставщика"
-                  className="h-10"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, supplier_article: value })}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Выберите артикул" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SUP001">SUP001</SelectItem>
+                    <SelectItem value="SUP002">SUP002</SelectItem>
+                    <SelectItem value="SUP003">SUP003</SelectItem>
+                    <SelectItem value="SUP004">SUP004</SelectItem>
+                    <SelectItem value="SUP005">SUP005</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="marketplace_article">Артикул маркетплейса</Label>
-                <Input
-                  id="marketplace_article"
-                  type="text"
+                <Select
                   value={formData.marketplace_article}
-                  onChange={(e) => setFormData({ ...formData, marketplace_article: e.target.value })}
-                  placeholder="Артикул маркетплейса"
-                  className="h-10"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, marketplace_article: value })}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Выберите артикул" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="WB123456">WB123456</SelectItem>
+                    <SelectItem value="WB789012">WB789012</SelectItem>
+                    <SelectItem value="OZ345678">OZ345678</SelectItem>
+                    <SelectItem value="OZ901234">OZ901234</SelectItem>
+                    <SelectItem value="WB567890">WB567890</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="barcode">Баркод</Label>
-                <Input
-                  id="barcode"
-                  type="text"
+                <Select
                   value={formData.barcode}
-                  onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                  placeholder="Баркод"
-                  className="h-10"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, barcode: value })}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Выберите баркод" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1234567890123">1234567890123</SelectItem>
+                    <SelectItem value="2345678901234">2345678901234</SelectItem>
+                    <SelectItem value="3456789012345">3456789012345</SelectItem>
+                    <SelectItem value="4567890123456">4567890123456</SelectItem>
+                    <SelectItem value="5678901234567">5678901234567</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
