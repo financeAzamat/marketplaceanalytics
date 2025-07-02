@@ -4,18 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Upload, FileText, Loader2, Download, Plus, Trash2 } from 'lucide-react';
+import { Upload, FileText, Loader2, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCostData } from '@/hooks/useCostData';
-import { useExpenseJournal } from '@/hooks/useExpenseJournal';
 
 export const FileUpload = () => {
   const [uploading, setUploading] = useState(false);
-  const { uploadCostFile, costData, isLoading: costLoading } = useCostData();
-  const { expenses } = useExpenseJournal();
+  const { costs, uploadCostFile, isLoading: costLoading } = useCostData();
   const { toast } = useToast();
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, fileType: 'costs' | 'expenses') => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, fileType: 'costs' | 'cogs') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -33,14 +31,14 @@ export const FileUpload = () => {
       if (fileType === 'costs') {
         await uploadCostFile(file);
         toast({
-          title: "Файл загружен",
+          title: "Файл затрат загружен",
           description: "Данные о затратах успешно обработаны",
         });
       } else {
-        // Handle expenses file upload (mock for now)
+        // Handle COGS file upload (mock for now)
         toast({
-          title: "Файл загружен",
-          description: "Данные о расходах успешно обработаны",
+          title: "Файл себестоимости загружен",
+          description: "Данные о себестоимости успешно обработаны",
         });
       }
     } catch (error: any) {
@@ -51,31 +49,30 @@ export const FileUpload = () => {
       });
     } finally {
       setUploading(false);
-      // Reset input
       event.target.value = '';
     }
   };
 
-  const downloadTemplate = (templateType: 'costs' | 'expenses') => {
+  const downloadTemplate = (templateType: 'costs' | 'cogs') => {
     let csvContent = '';
     let fileName = '';
 
     if (templateType === 'costs') {
       csvContent = '\uFEFF' + [
         'Дата,Категория,Описание,Сумма,Маркетплейс,Тип затрат',
-        '2024-01-15,Реклама,Яндекс Директ,15000,Wildberries,Операционные',
-        '2024-01-16,Логистика,Доставка товаров,8500,Ozon,Логистические',
-        '2024-01-17,Упаковка,Пакеты и коробки,3200,Wildberries,Материальные'
+        '2024-01-15,Реклама и маркетинг,Яндекс Директ,15000,Wildberries,Операционные',
+        '2024-01-16,Упаковка и логистика,Доставка товаров,8500,Ozon,Логистические',
+        '2024-01-17,Сырье и материалы,Пакеты и коробки,3200,Wildberries,Материальные'
       ].join('\n');
       fileName = 'template_costs.csv';
     } else {
       csvContent = '\uFEFF' + [
-        'Дата,Категория,Описание,Сумма,Себестоимость единицы,Количество',
-        '2024-01-15,Товар А,Закупка сырья,25000,125,200',
-        '2024-01-16,Товар Б,Производство,18000,90,200',
-        '2024-01-17,Товар В,Упаковка и маркировка,7500,50,150'
+        'Дата,Название товара,Описание,Себестоимость единицы,Количество,Общая сумма',
+        '2024-01-15,Товар А,Закупка сырья,125.00,200,25000.00',
+        '2024-01-16,Товар Б,Производство,90.00,200,18000.00',
+        '2024-01-17,Товар В,Упаковка и маркировка,50.00,150,7500.00'
       ].join('\n');
-      fileName = 'template_expenses.csv';
+      fileName = 'template_cogs.csv';
     }
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -127,7 +124,7 @@ export const FileUpload = () => {
                         onClick={() => downloadTemplate('costs')}
                       >
                         <Download className="h-4 w-4 mr-2" />
-                        Скачать шаблон
+                        Скачать шаблон затрат
                       </Button>
                       <Button
                         variant="outline"
@@ -135,7 +132,7 @@ export const FileUpload = () => {
                         onClick={() => document.getElementById('costs-file-upload')?.click()}
                       >
                         {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Загрузить файл
+                        Загрузить файл затрат
                       </Button>
                       <input
                         id="costs-file-upload"
@@ -169,24 +166,24 @@ export const FileUpload = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => downloadTemplate('expenses')}
+                        onClick={() => downloadTemplate('cogs')}
                       >
                         <Download className="h-4 w-4 mr-2" />
-                        Скачать шаблон
+                        Скачать шаблон себестоимости
                       </Button>
                       <Button
                         variant="outline"
                         disabled={uploading}
-                        onClick={() => document.getElementById('expenses-file-upload')?.click()}
+                        onClick={() => document.getElementById('cogs-file-upload')?.click()}
                       >
                         {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Загрузить файл
+                        Загрузить файл себестоимости
                       </Button>
                       <input
-                        id="expenses-file-upload"
+                        id="cogs-file-upload"
                         type="file"
                         accept=".xlsx,.xls"
-                        onChange={(e) => handleFileUpload(e, 'expenses')}
+                        onChange={(e) => handleFileUpload(e, 'cogs')}
                         className="hidden"
                       />
                     </div>
@@ -210,9 +207,9 @@ export const FileUpload = () => {
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin" />
                 </div>
-              ) : costData.length > 0 ? (
+              ) : costs.length > 0 ? (
                 <div className="space-y-3">
-                  {costData.map((item) => (
+                  {costs.map((item) => (
                     <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex-1">
                         <p className="font-medium">{item.file_name}</p>

@@ -2,6 +2,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExpenseForm } from './finance/ExpenseForm';
 import { ExpenseTable } from './finance/ExpenseTable';
+import { CostForm } from './finance/CostForm';
+import { CostTable } from './finance/CostTable';
+import { COGSForm } from './finance/COGSForm';
 import { PaymentForm } from './finance/PaymentForm';
 import { PaymentTable } from './finance/PaymentTable';
 import { FinancialAIChat } from './finance/FinancialAIChat';
@@ -12,13 +15,15 @@ export const FinanceSection = () => {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Финансовое управление</h2>
-        <p className="text-gray-600">Ведите учет расходов и платежей для P&L и анализа денежных потоков</p>
+        <p className="text-gray-600">Ведите учет расходов, затрат, себестоимости и платежей для P&L и анализа денежных потоков</p>
       </div>
 
       <Tabs defaultValue="expenses" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="expenses">Журнал расходов</TabsTrigger>
-          <TabsTrigger value="payments">Журнал платежей</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="expenses">Расходы</TabsTrigger>
+          <TabsTrigger value="costs">Затраты</TabsTrigger>
+          <TabsTrigger value="cogs">Себестоимость</TabsTrigger>
+          <TabsTrigger value="payments">Платежи</TabsTrigger>
           <TabsTrigger value="file-upload">Загрузка файлов</TabsTrigger>
           <TabsTrigger value="ai-assistant">AI Аналитик</TabsTrigger>
         </TabsList>
@@ -30,6 +35,30 @@ export const FinanceSection = () => {
             </div>
             <div className="lg:col-span-2">
               <ExpenseTable />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="costs" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <CostForm />
+            </div>
+            <div className="lg:col-span-2">
+              <CostTable />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="cogs" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <COGSForm />
+            </div>
+            <div className="lg:col-span-2">
+              <div className="text-center py-8 text-gray-500">
+                <p>Таблица себестоимости будет добавлена в следующем обновлении</p>
+              </div>
             </div>
           </div>
         </TabsContent>
