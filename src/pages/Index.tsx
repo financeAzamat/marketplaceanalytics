@@ -16,10 +16,12 @@ import {
   RefreshCw,
   Shield,
   Zap,
-  Sparkles
+  Sparkles,
+  Calculator
 } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
 import { ReportsSection } from "@/components/ReportsSection";
+import { FinanceSection } from "@/components/FinanceSection";
 import { SettingsSection } from "@/components/SettingsSection";
 import { PricingSection } from "@/components/PricingSection";
 
@@ -69,13 +71,20 @@ const Index = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4 bg-white/70 backdrop-blur-lg border border-white/20 shadow-xl shadow-slate-200/40 rounded-2xl p-2">
+          <TabsList className="grid w-full grid-cols-5 lg:w-fit lg:grid-cols-5 bg-white/70 backdrop-blur-lg border border-white/20 shadow-xl shadow-slate-200/40 rounded-2xl p-2">
             <TabsTrigger 
               value="dashboard" 
               className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
             >
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline font-medium">Панель</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="finance" 
+              className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
+            >
+              <Calculator className="h-4 w-4" />
+              <span className="hidden sm:inline font-medium">Финансы</span>
             </TabsTrigger>
             <TabsTrigger 
               value="reports" 
@@ -102,6 +111,10 @@ const Index = () => {
 
           <TabsContent value="dashboard" className="space-y-6">
             <Dashboard />
+          </TabsContent>
+
+          <TabsContent value="finance" className="space-y-6">
+            <FinanceSection />
           </TabsContent>
 
           <TabsContent value="reports" className="space-y-6">
