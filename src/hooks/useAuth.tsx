@@ -27,42 +27,30 @@ const mockUser: User = {
 
 export const useAuth = () => {
   const [state, setState] = useState<AuthState>({
-    user: null, // Changed from mockUser to null to show login form
+    user: mockUser, // Always return mock user for demo
     loading: false,
   });
 
   useEffect(() => {
-    // Set no user initially to show login form
+    // Always set demo user for immediate access
     setState({
-      user: null,
+      user: mockUser,
       loading: false,
     });
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    // Mock signup - always succeed and set user
-    setState({
-      user: mockUser,
-      loading: false,
-    });
+    // Mock signup - not needed in demo mode
     return { data: { user: mockUser, session: null }, error: null };
   };
 
   const signIn = async (email: string, password: string) => {
-    // Mock signin - always succeed and set user
-    setState({
-      user: mockUser,
-      loading: false,
-    });
+    // Mock signin - not needed in demo mode
     return { data: { user: mockUser, session: null }, error: null };
   };
 
   const signOut = async () => {
-    // Mock signout - remove user
-    setState({
-      user: null,
-      loading: false,
-    });
+    // Mock signout - not needed in demo mode
     return { error: null };
   };
 

@@ -1,7 +1,5 @@
 
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { AuthSection } from "@/components/AuthSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,26 +25,7 @@ import { PricingSection } from "@/components/PricingSection";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const { user, loading } = useAuth();
 
-  // Show auth form if user is not authenticated
-  if (!user && !loading) {
-    return <AuthSection onAuth={() => {}} />;
-  }
-
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Загрузка...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show main dashboard for authenticated users
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
       {/* Background decorative elements */}
@@ -71,7 +50,7 @@ const Index = () => {
             <div className="flex items-center space-x-4">
               <Badge variant="outline" className="bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border-green-200/60 shadow-sm">
                 <Sparkles className="h-3 w-3 mr-1" />
-                Pro Plan
+                Demo Mode
               </Badge>
               <Button 
                 variant="outline" 
