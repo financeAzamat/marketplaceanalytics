@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -194,39 +195,6 @@ export const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Последние загрузки</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {costData.length > 0 ? (
-            <div className="space-y-2">
-              {costData.slice(0, 5).map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{item.file_name}</p>
-                    <p className="text-sm text-gray-600">
-                      {new Date(item.upload_date).toLocaleDateString('ru-RU')}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">{Number(item.total_amount).toLocaleString('ru-RU')} ₽</p>
-                    <Badge variant={item.status === 'processed' ? 'default' : 'secondary'}>
-                      {item.status === 'processed' ? 'Обработан' : 'В обработке'}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-8">
-              Загрузите первый файл с расходами для начала работы
-            </p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 };

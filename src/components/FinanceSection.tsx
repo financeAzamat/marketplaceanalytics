@@ -5,6 +5,7 @@ import { ExpenseTable } from './finance/ExpenseTable';
 import { PaymentForm } from './finance/PaymentForm';
 import { PaymentTable } from './finance/PaymentTable';
 import { FinancialAIChat } from './finance/FinancialAIChat';
+import { FileUpload } from './FileUpload';
 
 export const FinanceSection = () => {
   return (
@@ -15,9 +16,10 @@ export const FinanceSection = () => {
       </div>
 
       <Tabs defaultValue="expenses" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="expenses">Журнал расходов</TabsTrigger>
           <TabsTrigger value="payments">Журнал платежей</TabsTrigger>
+          <TabsTrigger value="file-upload">Загрузка файлов</TabsTrigger>
           <TabsTrigger value="ai-assistant">AI Аналитик</TabsTrigger>
         </TabsList>
 
@@ -41,6 +43,10 @@ export const FinanceSection = () => {
               <PaymentTable />
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="file-upload" className="space-y-6">
+          <FileUpload />
         </TabsContent>
 
         <TabsContent value="ai-assistant" className="space-y-6">
