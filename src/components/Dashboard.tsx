@@ -21,7 +21,7 @@ export const Dashboard = () => {
     dateTo?.toISOString().split('T')[0],
     marketplace
   );
-  const { costData, isLoading: costLoading } = useCostData();
+  const { costs, isLoading: costLoading } = useCostData();
   const { getConnectionStatus } = useMarketplaceConnections();
   const { syncAllMarketplaces } = useDataSync();
 
@@ -29,7 +29,7 @@ export const Dashboard = () => {
   const totalRevenue = salesData.reduce((sum, item) => sum + Number(item.revenue), 0);
   const totalProfit = salesData.reduce((sum, item) => sum + Number(item.profit), 0);
   const totalOrders = salesData.reduce((sum, item) => sum + item.orders_count, 0);
-  const totalCosts = costData.reduce((sum, item) => sum + Number(item.total_amount), 0);
+  const totalCosts = costs.reduce((sum, item) => sum + Number(item.total_amount), 0);
 
   // Prepare chart data
   const revenueData = salesData.slice(0, 7).reverse().map(item => ({
@@ -147,7 +147,7 @@ export const Dashboard = () => {
             <div className="text-2xl font-bold">
               {costLoading ? "..." : `${totalCosts.toLocaleString('ru-RU')} ₽`}
             </div>
-            <p className="text-xs opacity-75 mt-1">Загружено файлов: {costData.length}</p>
+            <p className="text-xs opacity-75 mt-1">Загружено файлов: {costs.length}</p>
           </CardContent>
         </Card>
       </div>
