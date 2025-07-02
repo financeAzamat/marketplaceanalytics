@@ -39,22 +39,7 @@ export const PaymentTable = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Журнал платежей
-          <div className="flex gap-2">
-            <Badge variant="outline" className="text-green-600">
-              <TrendingUp className="h-3 w-3 mr-1" />
-              Доходы: {totalIncome.toLocaleString('ru-RU')} ₽
-            </Badge>
-            <Badge variant="outline" className="text-red-600">
-              <TrendingDown className="h-3 w-3 mr-1" />
-              Расходы: {totalExpense.toLocaleString('ru-RU')} ₽
-            </Badge>
-            <Badge variant={netCashFlow >= 0 ? 'default' : 'destructive'}>
-              Баланс: {netCashFlow.toLocaleString('ru-RU')} ₽
-            </Badge>
-          </div>
-        </CardTitle>
+        <CardTitle>Журнал платежей</CardTitle>
       </CardHeader>
       <CardContent>
         {payments.length === 0 ? (

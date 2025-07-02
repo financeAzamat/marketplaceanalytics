@@ -24,12 +24,7 @@ export const ExpenseTable = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Журнал расходов
-          <Badge variant="outline">
-            Всего: {totalAmount.toLocaleString('ru-RU')} ₽
-          </Badge>
-        </CardTitle>
+        <CardTitle>Журнал расходов</CardTitle>
       </CardHeader>
       <CardContent>
         {expenses.length === 0 ? (
