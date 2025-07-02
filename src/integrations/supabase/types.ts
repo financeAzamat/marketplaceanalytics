@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cogs_entries: {
+        Row: {
+          barcode: string | null
+          brand: string | null
+          cogs_date: string
+          created_at: string
+          id: string
+          marketplace: string
+          marketplace_article: string | null
+          product_name: string
+          size: string | null
+          subject: string | null
+          supplier_article: string | null
+          unit_cost: number
+          updated_at: string
+        }
+        Insert: {
+          barcode?: string | null
+          brand?: string | null
+          cogs_date?: string
+          created_at?: string
+          id?: string
+          marketplace: string
+          marketplace_article?: string | null
+          product_name: string
+          size?: string | null
+          subject?: string | null
+          supplier_article?: string | null
+          unit_cost: number
+          updated_at?: string
+        }
+        Update: {
+          barcode?: string | null
+          brand?: string | null
+          cogs_date?: string
+          created_at?: string
+          id?: string
+          marketplace?: string
+          marketplace_article?: string | null
+          product_name?: string
+          size?: string | null
+          subject?: string | null
+          supplier_article?: string | null
+          unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cost_data: {
         Row: {
           created_at: string

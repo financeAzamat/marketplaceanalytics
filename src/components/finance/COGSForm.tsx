@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCOGSEntries } from '@/hooks/useCOGSEntries';
 
 export interface COGSEntry {
   id?: string;
@@ -26,6 +27,7 @@ const MARKETPLACES = [
 ];
 
 export const COGSForm = () => {
+  const { addCOGSEntry, isAdding } = useCOGSEntries();
   const [formData, setFormData] = useState<COGSEntry>({
     cogs_date: new Date().toISOString().split('T')[0],
     product_name: '',
@@ -43,8 +45,7 @@ export const COGSForm = () => {
     e.preventDefault();
     if (!formData.product_name || formData.unit_cost <= 0 || !formData.marketplace) return;
     
-    // Mock submission for now
-    console.log('COGS entry:', formData);
+    addCOGSEntry(formData);
     
     setFormData({
       cogs_date: new Date().toISOString().split('T')[0],
@@ -273,8 +274,8 @@ export const COGSForm = () => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full h-11">
-            Добавить себестоимость
+          <Button type="submit" disabled={isAdding} className="w-full h-11">
+            {isAdding ? 'Добавление...' : 'Добавить себестоимость'}
           </Button>
         </form>
       </CardContent>

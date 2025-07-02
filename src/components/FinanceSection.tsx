@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExpenseForm } from './finance/ExpenseForm';
 import { ExpenseTable } from './finance/ExpenseTable';
 import { COGSForm } from './finance/COGSForm';
+import { COGSTable } from './finance/COGSTable';
 import { PaymentForm } from './finance/PaymentForm';
 import { PaymentTable } from './finance/PaymentTable';
 import { FinancialAIChat } from './finance/FinancialAIChat';
@@ -42,9 +43,7 @@ export const FinanceSection = () => {
               <COGSForm />
             </div>
             <div className="lg:col-span-2">
-              <div className="text-center py-8 text-gray-500">
-                <p>Таблица себестоимости будет добавлена в следующем обновлении</p>
-              </div>
+              <COGSTable />
             </div>
           </div>
         </TabsContent>
