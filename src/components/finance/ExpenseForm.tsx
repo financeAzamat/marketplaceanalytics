@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useExpenseJournal, ExpenseEntry } from '@/hooks/useExpenseJournal';
 
@@ -16,6 +15,11 @@ const EXPENSE_CATEGORIES = [
   'Налоги и сборы',
   'Офисные расходы',
   'Прочие расходы',
+];
+
+const MARKETPLACES = [
+  { value: 'wildberries', label: 'Wildberries' },
+  { value: 'ozon', label: 'Ozon' },
 ];
 
 export const ExpenseForm = () => {
@@ -32,7 +36,7 @@ export const ExpenseForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.category || !formData.description || formData.amount <= 0) return;
+    if (!formData.category || formData.amount <= 0 || !formData.marketplace) return;
     
     addExpense(formData);
     setFormData({
@@ -78,51 +82,53 @@ export const ExpenseForm = () => {
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="category">Категория</Label>
-            <Select
-              value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Выберите категорию" />
-              </SelectTrigger>
-              <SelectContent>
-                {EXPENSE_CATEGORIES.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="category">Категория</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) => setFormData({ ...formData, category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите категорию" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EXPENSE_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="marketplace">Маркетплейс *</Label>
+              <Select
+                value={formData.marketplace || ''}
+                onValueChange={(value) => setFormData({ ...formData, marketplace: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите маркетплейс" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MARKETPLACES.map((marketplace) => (
+                    <SelectItem key={marketplace.value} value={marketplace.value}>
+                      {marketplace.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>
-            <Label htmlFor="description">Описание</Label>
+            <Label htmlFor="description">Описание (опционально)</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Описание расхода"
-              required
             />
-          </div>
-
-          <div>
-            <Label htmlFor="marketplace">Маркетплейс (опционально)</Label>
-            <Select
-              value={formData.marketplace || 'none'}
-              onValueChange={(value) => setFormData({ ...formData, marketplace: value === 'none' ? '' : value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Выберите маркетплейс" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Не указан</SelectItem>
-                <SelectItem value="wildberries">Wildberries</SelectItem>
-                <SelectItem value="ozon">Ozon</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div>
@@ -134,17 +140,6 @@ export const ExpenseForm = () => {
               onChange={(e) => setFormData({ ...formData, receipt_url: e.target.value })}
               placeholder="https://..."
             />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_tax_deductible"
-              checked={formData.is_tax_deductible}
-              onCheckedChange={(checked) => 
-                setFormData({ ...formData, is_tax_deductible: checked as boolean })
-              }
-            />
-            <Label htmlFor="is_tax_deductible">Налоговый вычет</Label>
           </div>
 
           <Button type="submit" disabled={isAdding} className="w-full">
