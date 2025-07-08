@@ -38,16 +38,12 @@ export const COGSTable = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Дата</TableHead>
-                  <TableHead>Товар</TableHead>
-                  <TableHead>Бренд</TableHead>
+                  <TableHead>Период</TableHead>
                   <TableHead>Предмет</TableHead>
-                  <TableHead>Размер</TableHead>
                   <TableHead>Себестоимость</TableHead>
                   <TableHead>Маркетплейс</TableHead>
                   <TableHead>Артикул поставщика</TableHead>
                   <TableHead>Артикул МП</TableHead>
-                  <TableHead>Баркод</TableHead>
                   <TableHead>Действия</TableHead>
                 </TableRow>
               </TableHeader>
@@ -55,14 +51,9 @@ export const COGSTable = () => {
                 {cogsEntries.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell>
-                      {new Date(entry.cogs_date).toLocaleDateString('ru-RU')}
+                      {new Date(entry.date_from).toLocaleDateString('ru-RU')} - {new Date(entry.date_to).toLocaleDateString('ru-RU')}
                     </TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {entry.product_name}
-                    </TableCell>
-                    <TableCell>{entry.brand || '—'}</TableCell>
                     <TableCell>{entry.subject || '—'}</TableCell>
-                    <TableCell>{entry.size || '—'}</TableCell>
                     <TableCell className="font-medium">
                       {Number(entry.unit_cost).toLocaleString('ru-RU')} ₽
                     </TableCell>
@@ -73,9 +64,6 @@ export const COGSTable = () => {
                     </TableCell>
                     <TableCell>{entry.supplier_article || '—'}</TableCell>
                     <TableCell>{entry.marketplace_article || '—'}</TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {entry.barcode || '—'}
-                    </TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"

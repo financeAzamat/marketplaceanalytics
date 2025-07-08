@@ -5,21 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCOGSEntries } from '@/hooks/useCOGSEntries';
+import { useCOGSEntries, COGSEntry } from '@/hooks/useCOGSEntries';
 
-export interface COGSEntry {
-  id?: string;
-  cogs_date: string;
-  product_name: string;
-  unit_cost: number;
-  marketplace: string;
-  brand: string;
-  subject: string;
-  size: string;
-  supplier_article: string;
-  marketplace_article: string;
-  barcode: string;
-}
 
 const MARKETPLACES = [
   { value: 'wb', label: 'WB' },
@@ -29,35 +16,29 @@ const MARKETPLACES = [
 export const COGSForm = () => {
   const { addCOGSEntry, isAdding } = useCOGSEntries();
   const [formData, setFormData] = useState<COGSEntry>({
-    cogs_date: new Date().toISOString().split('T')[0],
-    product_name: '',
+    date_from: new Date().toISOString().split('T')[0],
+    date_to: new Date().toISOString().split('T')[0],
     unit_cost: 0,
     marketplace: '',
-    brand: '',
     subject: '',
-    size: '',
     supplier_article: '',
     marketplace_article: '',
-    barcode: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.product_name || formData.unit_cost <= 0 || !formData.marketplace) return;
+    if (formData.unit_cost <= 0 || !formData.marketplace) return;
     
     addCOGSEntry(formData);
     
     setFormData({
-      cogs_date: new Date().toISOString().split('T')[0],
-      product_name: '',
+      date_from: new Date().toISOString().split('T')[0],
+      date_to: new Date().toISOString().split('T')[0],
       unit_cost: 0,
       marketplace: '',
-      brand: '',
       subject: '',
-      size: '',
       supplier_article: '',
       marketplace_article: '',
-      barcode: '',
     });
   };
 
@@ -75,16 +56,29 @@ export const COGSForm = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="cogs_date">Дата</Label>
+                <Label htmlFor="date_from">Дата с</Label>
                 <Input
-                  id="cogs_date"
+                  id="date_from"
                   type="date"
-                  value={formData.cogs_date}
-                  onChange={(e) => setFormData({ ...formData, cogs_date: e.target.value })}
+                  value={formData.date_from}
+                  onChange={(e) => setFormData({ ...formData, date_from: e.target.value })}
                   required
                   className="h-10"
                 />
               </div>
+              <div>
+                <Label htmlFor="date_to">Дата по</Label>
+                <Input
+                  id="date_to"
+                  type="date"
+                  value={formData.date_to}
+                  onChange={(e) => setFormData({ ...formData, date_to: e.target.value })}
+                  required
+                  className="h-10"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="marketplace">Маркетплейс</Label>
                 <Select
@@ -103,19 +97,19 @@ export const COGSForm = () => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div>
-              <Label htmlFor="unit_cost">Себестоимость единицы</Label>
-              <Input
-                id="unit_cost"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.unit_cost || ''}
-                onChange={(e) => setFormData({ ...formData, unit_cost: parseFloat(e.target.value) || 0 })}
-                required
-                className="h-10"
-              />
+              <div>
+                <Label htmlFor="unit_cost">Себестоимость единицы</Label>
+                <Input
+                  id="unit_cost"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.unit_cost || ''}
+                  onChange={(e) => setFormData({ ...formData, unit_cost: parseFloat(e.target.value) || 0 })}
+                  required
+                  className="h-10"
+                />
+              </div>
             </div>
           </div>
 
@@ -124,46 +118,7 @@ export const COGSForm = () => {
             <h3 className="text-sm font-medium text-gray-700 border-b pb-2">
               Информация о товаре
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="product_name">Название товара</Label>
-                <Select
-                  value={formData.product_name}
-                  onValueChange={(value) => setFormData({ ...formData, product_name: value })}
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Выберите товар" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Футболка базовая">Футболка базовая</SelectItem>
-                    <SelectItem value="Джинсы классические">Джинсы классические</SelectItem>
-                    <SelectItem value="Кроссовки спортивные">Кроссовки спортивные</SelectItem>
-                    <SelectItem value="Платье летнее">Платье летнее</SelectItem>
-                    <SelectItem value="Куртка демисезонная">Куртка демисезонная</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="brand">Бренд</Label>
-                <Select
-                  value={formData.brand}
-                  onValueChange={(value) => setFormData({ ...formData, brand: value })}
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Выберите бренд" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Nike">Nike</SelectItem>
-                    <SelectItem value="Adidas">Adidas</SelectItem>
-                    <SelectItem value="Zara">Zara</SelectItem>
-                    <SelectItem value="H&M">H&M</SelectItem>
-                    <SelectItem value="Levi's">Levi's</SelectItem>
-                    <SelectItem value="Tommy Hilfiger">Tommy Hilfiger</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <div>
                 <Label htmlFor="subject">Предмет</Label>
                 <Select
@@ -179,30 +134,6 @@ export const COGSForm = () => {
                     <SelectItem value="Аксессуары">Аксессуары</SelectItem>
                     <SelectItem value="Сумки">Сумки</SelectItem>
                     <SelectItem value="Украшения">Украшения</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="size">Размер</Label>
-                <Select
-                  value={formData.size}
-                  onValueChange={(value) => setFormData({ ...formData, size: value })}
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Выберите размер" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="XS">XS</SelectItem>
-                    <SelectItem value="S">S</SelectItem>
-                    <SelectItem value="M">M</SelectItem>
-                    <SelectItem value="L">L</SelectItem>
-                    <SelectItem value="XL">XL</SelectItem>
-                    <SelectItem value="XXL">XXL</SelectItem>
-                    <SelectItem value="36">36</SelectItem>
-                    <SelectItem value="38">38</SelectItem>
-                    <SelectItem value="40">40</SelectItem>
-                    <SelectItem value="42">42</SelectItem>
-                    <SelectItem value="44">44</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -248,26 +179,6 @@ export const COGSForm = () => {
                     <SelectItem value="OZ345678">OZ345678</SelectItem>
                     <SelectItem value="OZ901234">OZ901234</SelectItem>
                     <SelectItem value="WB567890">WB567890</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="barcode">Баркод</Label>
-                <Select
-                  value={formData.barcode}
-                  onValueChange={(value) => setFormData({ ...formData, barcode: value })}
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Выберите баркод" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1234567890123">1234567890123</SelectItem>
-                    <SelectItem value="2345678901234">2345678901234</SelectItem>
-                    <SelectItem value="3456789012345">3456789012345</SelectItem>
-                    <SelectItem value="4567890123456">4567890123456</SelectItem>
-                    <SelectItem value="5678901234567">5678901234567</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

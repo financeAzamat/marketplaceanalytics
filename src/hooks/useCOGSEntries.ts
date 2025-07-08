@@ -4,16 +4,13 @@ import { useToast } from './use-toast';
 
 export interface COGSEntry {
   id?: string;
-  cogs_date: string;
-  product_name: string;
+  date_from: string;
+  date_to: string;
   unit_cost: number;
   marketplace: string;
-  brand: string;
   subject: string;
-  size: string;
   supplier_article: string;
   marketplace_article: string;
-  barcode: string;
 }
 
 export const useCOGSEntries = () => {
@@ -26,7 +23,7 @@ export const useCOGSEntries = () => {
       const { data, error } = await supabase
         .from('cogs_entries')
         .select('*')
-        .order('cogs_date', { ascending: false });
+        .order('date_from', { ascending: false });
 
       if (error) throw error;
       return data;
