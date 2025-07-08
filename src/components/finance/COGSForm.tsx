@@ -1,11 +1,17 @@
 
 import { useState } from 'react';
+import { format } from 'date-fns';
+import { DateRange } from 'react-day-picker';
+import { CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useCOGSEntries, COGSEntry } from '@/hooks/useCOGSEntries';
+import { cn } from '@/lib/utils';
 
 
 const MARKETPLACES = [
@@ -15,9 +21,8 @@ const MARKETPLACES = [
 
 export const COGSForm = () => {
   const { addCOGSEntry, isAdding } = useCOGSEntries();
-  const [formData, setFormData] = useState<COGSEntry>({
-    date_from: new Date().toISOString().split('T')[0],
-    date_to: new Date().toISOString().split('T')[0],
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [formData, setFormData] = useState<Omit<COGSEntry, 'date_from' | 'date_to'>>({
     unit_cost: 0,
     marketplace: '',
     subject: '',
@@ -27,13 +32,18 @@ export const COGSForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.unit_cost <= 0 || !formData.marketplace) return;
+    if (formData.unit_cost <= 0 || !formData.marketplace || !dateRange?.from || !dateRange?.to) return;
     
-    addCOGSEntry(formData);
+    const entryData: COGSEntry = {
+      ...formData,
+      date_from: dateRange.from.toISOString().split('T')[0],
+      date_to: dateRange.to.toISOString().split('T')[0],
+    };
     
+    addCOGSEntry(entryData);
+    
+    setDateRange(undefined);
     setFormData({
-      date_from: new Date().toISOString().split('T')[0],
-      date_to: new Date().toISOString().split('T')[0],
       unit_cost: 0,
       marketplace: '',
       subject: '',
@@ -54,28 +64,41 @@ export const COGSForm = () => {
             <h3 className="text-sm font-medium text-gray-700 border-b pb-2">
               Основная информация
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="date_from">Дата с</Label>
-                <Input
-                  id="date_from"
-                  type="date"
-                  value={formData.date_from}
-                  onChange={(e) => setFormData({ ...formData, date_from: e.target.value })}
-                  required
-                  className="h-10"
-                />
-              </div>
-              <div>
-                <Label htmlFor="date_to">Дата по</Label>
-                <Input
-                  id="date_to"
-                  type="date"
-                  value={formData.date_to}
-                  onChange={(e) => setFormData({ ...formData, date_to: e.target.value })}
-                  required
-                  className="h-10"
-                />
+                <Label>Период действия</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full h-10 justify-start text-left font-normal",
+                        !dateRange?.from && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateRange?.from ? (
+                        dateRange.to ? (
+                          `${format(dateRange.from, "dd.MM.yyyy")} - ${format(dateRange.to, "dd.MM.yyyy")}`
+                        ) : (
+                          format(dateRange.from, "dd.MM.yyyy")
+                        )
+                      ) : (
+                        <span>Выберите период</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
