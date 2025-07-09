@@ -6,11 +6,9 @@ import { useToast } from './use-toast';
 export interface PaymentEntry {
   id?: string;
   payment_date: string;
-  payment_type: 'income' | 'expense';
   category: string;
   description: string;
   amount: number;
-  payment_method: 'cash' | 'bank_transfer' | 'card' | 'electronic';
   marketplace: string;
 }
 
@@ -45,14 +43,14 @@ export const usePaymentJournal = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-journal'] });
       toast({
-        title: 'Платеж добавлен',
-        description: 'Запись успешно добавлена в журнал платежей',
+        title: 'Доход добавлен',
+        description: 'Запись успешно добавлена в журнал доходов',
       });
     },
     onError: (error) => {
       toast({
         title: 'Ошибка',
-        description: 'Не удалось добавить платеж',
+        description: 'Не удалось добавить доход',
         variant: 'destructive',
       });
       console.error('Error adding payment:', error);
@@ -71,14 +69,14 @@ export const usePaymentJournal = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-journal'] });
       toast({
-        title: 'Платеж удален',
+        title: 'Доход удален',
         description: 'Запись успешно удалена из журнала',
       });
     },
     onError: (error) => {
       toast({
         title: 'Ошибка',
-        description: 'Не удалось удалить платеж',
+        description: 'Не удалось удалить доход',
         variant: 'destructive',
       });
       console.error('Error deleting payment:', error);

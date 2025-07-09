@@ -8,38 +8,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePaymentJournal, PaymentEntry } from '@/hooks/usePaymentJournal';
 
-const PAYMENT_CATEGORIES = {
-  income: [
-    'Продажи на маркетплейсах',
-    'Возвраты и компенсации',
-    'Прочие доходы',
-  ],
-  expense: [
-    'Закупка товаров',
-    'Реклама и продвижение',
-    'Логистика и доставка',
-    'Комиссии и платежи',
-    'Налоги',
-    'Прочие расходы',
-  ],
-};
+const INCOME_CATEGORIES = [
+  'Продажи на маркетплейсах',
+  'Возвраты и компенсации',
+  'Прочие доходы',
+];
 
-const PAYMENT_METHODS = [
-  { value: 'cash', label: 'Наличные' },
-  { value: 'bank_transfer', label: 'Банковский перевод' },
-  { value: 'card', label: 'Банковская карта' },
-  { value: 'electronic', label: 'Электронные деньги' },
+const MARKETPLACES = [
+  { value: 'wildberries', label: 'Wildberries' },
+  { value: 'ozon', label: 'Ozon' },
+  { value: 'other', label: 'Прочее' },
 ];
 
 export const PaymentForm = () => {
   const { addPayment, isAdding } = usePaymentJournal();
   const [formData, setFormData] = useState<PaymentEntry>({
     payment_date: new Date().toISOString().split('T')[0],
-    payment_type: 'expense',
     category: '',
     description: '',
     amount: 0,
-    payment_method: 'bank_transfer',
     marketplace: '',
   });
 
@@ -50,27 +37,23 @@ export const PaymentForm = () => {
     addPayment(formData);
     setFormData({
       payment_date: new Date().toISOString().split('T')[0],
-      payment_type: 'expense',
       category: '',
       description: '',
       amount: 0,
-      payment_method: 'bank_transfer',
       marketplace: '',
     });
   };
 
-  const availableCategories = PAYMENT_CATEGORIES[formData.payment_type];
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Добавить платеж</CardTitle>
+        <CardTitle>Добавить доход</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="payment_date">Дата платежа</Label>
+              <Label htmlFor="payment_date">Дата дохода</Label>
               <Input
                 id="payment_date"
                 type="date"
@@ -93,24 +76,6 @@ export const PaymentForm = () => {
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="payment_type">Тип платежа</Label>
-            <Select
-              value={formData.payment_type}
-              onValueChange={(value: 'income' | 'expense') => 
-                setFormData({ ...formData, payment_type: value, category: '' })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="income">Доход</SelectItem>
-                <SelectItem value="expense">Расход</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="category">Категория</Label>
@@ -122,7 +87,7 @@ export const PaymentForm = () => {
                   <SelectValue placeholder="Выберите категорию" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableCategories.map((category) => (
+                  {INCOME_CATEGORIES.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
                     </SelectItem>
@@ -140,30 +105,14 @@ export const PaymentForm = () => {
                   <SelectValue placeholder="Выберите маркетплейс" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="wildberries">Wildberries</SelectItem>
-                  <SelectItem value="ozon">Ozon</SelectItem>
+                  {MARKETPLACES.map((marketplace) => (
+                    <SelectItem key={marketplace.value} value={marketplace.value}>
+                      {marketplace.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="payment_method">Способ платежа</Label>
-            <Select
-              value={formData.payment_method}
-              onValueChange={(value: any) => setFormData({ ...formData, payment_method: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYMENT_METHODS.map((method) => (
-                  <SelectItem key={method.value} value={method.value}>
-                    {method.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div>
@@ -172,13 +121,13 @@ export const PaymentForm = () => {
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Описание платежа"
+              placeholder="Описание дохода"
               required
             />
           </div>
 
           <Button type="submit" disabled={isAdding} className="w-full">
-            {isAdding ? 'Добавление...' : 'Добавить платеж'}
+            {isAdding ? 'Добавление...' : 'Добавить доход'}
           </Button>
         </form>
       </CardContent>

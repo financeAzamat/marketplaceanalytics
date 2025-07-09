@@ -12,6 +12,7 @@ export interface ExpenseEntry {
   marketplace?: string;
   is_tax_deductible: boolean;
   receipt_url?: string;
+  expense_type?: string;
 }
 
 export const useExpenseJournal = () => {

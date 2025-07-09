@@ -17,9 +17,15 @@ const EXPENSE_CATEGORIES = [
   'Прочие расходы',
 ];
 
+const EXPENSE_TYPES = [
+  { value: 'variable', label: 'Переменные' },
+  { value: 'fixed', label: 'Постоянные' },
+];
+
 const MARKETPLACES = [
   { value: 'wildberries', label: 'Wildberries' },
   { value: 'ozon', label: 'Ozon' },
+  { value: 'other', label: 'Прочее' },
 ];
 
 export const ExpenseForm = () => {
@@ -32,6 +38,7 @@ export const ExpenseForm = () => {
     marketplace: '',
     is_tax_deductible: false,
     receipt_url: '',
+    expense_type: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,6 +54,7 @@ export const ExpenseForm = () => {
       marketplace: '',
       is_tax_deductible: false,
       receipt_url: '',
+      expense_type: '',
     });
   };
 
@@ -82,7 +90,7 @@ export const ExpenseForm = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="category">Категория</Label>
               <Select
@@ -96,6 +104,24 @@ export const ExpenseForm = () => {
                   {EXPENSE_CATEGORIES.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="expense_type">Тип расхода</Label>
+              <Select
+                value={formData.expense_type || ''}
+                onValueChange={(value) => setFormData({ ...formData, expense_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите тип" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EXPENSE_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

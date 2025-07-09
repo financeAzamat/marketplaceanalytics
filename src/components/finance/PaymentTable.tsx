@@ -6,12 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, TrendingUp, TrendingDown } from 'lucide-react';
 import { usePaymentJournal } from '@/hooks/usePaymentJournal';
 
-const PAYMENT_METHOD_LABELS = {
-  cash: 'Наличные',
-  bank_transfer: 'Банковский перевод',
-  card: 'Банковская карта',
-  electronic: 'Электронные деньги',
-};
 
 export const PaymentTable = () => {
   const { payments, deletePayment, isLoading, isDeleting } = usePaymentJournal();
@@ -26,25 +20,17 @@ export const PaymentTable = () => {
     );
   }
 
-  const totalIncome = payments
-    .filter(p => p.payment_type === 'income')
-    .reduce((sum, payment) => sum + Number(payment.amount), 0);
-  
-  const totalExpense = payments
-    .filter(p => p.payment_type === 'expense')
-    .reduce((sum, payment) => sum + Number(payment.amount), 0);
-
-  const netCashFlow = totalIncome - totalExpense;
+  const totalIncome = payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Журнал платежей</CardTitle>
+        <CardTitle>Журнал доходов</CardTitle>
       </CardHeader>
       <CardContent>
         {payments.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            Платежи не найдены. Добавьте первую запись.
+            Доходы не найдены. Добавьте первую запись.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -52,11 +38,9 @@ export const PaymentTable = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Дата</TableHead>
-                  <TableHead>Тип</TableHead>
                   <TableHead>Категория</TableHead>
                   <TableHead>Описание</TableHead>
                   <TableHead>Сумма</TableHead>
-                  <TableHead>Способ</TableHead>
                   <TableHead>Маркетплейс</TableHead>
                   <TableHead>Действия</TableHead>
                 </TableRow>
@@ -67,38 +51,14 @@ export const PaymentTable = () => {
                     <TableCell>
                       {new Date(payment.payment_date).toLocaleDateString('ru-RU')}
                     </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={payment.payment_type === 'income' ? 'default' : 'secondary'}
-                        className={payment.payment_type === 'income' ? 'text-green-600' : 'text-red-600'}
-                      >
-                        {payment.payment_type === 'income' ? (
-                          <>
-                            <TrendingUp className="h-3 w-3 mr-1" />
-                            Доход
-                          </>
-                        ) : (
-                          <>
-                            <TrendingDown className="h-3 w-3 mr-1" />
-                            Расход
-                          </>
-                        )}
-                      </Badge>
-                    </TableCell>
                     <TableCell>{payment.category}</TableCell>
                     <TableCell className="max-w-xs truncate">
                       {payment.description}
                     </TableCell>
                     <TableCell className="font-medium">
-                      <span className={payment.payment_type === 'income' ? 'text-green-600' : 'text-red-600'}>
-                        {payment.payment_type === 'income' ? '+' : '-'}
-                        {Number(payment.amount).toLocaleString('ru-RU')} ₽
+                      <span className="text-green-600">
+                        +{Number(payment.amount).toLocaleString('ru-RU')} ₽
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {PAYMENT_METHOD_LABELS[payment.payment_method]}
-                      </Badge>
                     </TableCell>
                     <TableCell>
                       {payment.marketplace ? (

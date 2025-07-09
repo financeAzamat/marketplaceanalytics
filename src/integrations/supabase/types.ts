@@ -87,6 +87,7 @@ export type Database = {
           created_at: string
           description: string
           expense_date: string
+          expense_type: string | null
           id: string
           is_tax_deductible: boolean
           marketplace: string | null
@@ -99,6 +100,7 @@ export type Database = {
           created_at?: string
           description: string
           expense_date?: string
+          expense_type?: string | null
           id?: string
           is_tax_deductible?: boolean
           marketplace?: string | null
@@ -111,6 +113,7 @@ export type Database = {
           created_at?: string
           description?: string
           expense_date?: string
+          expense_type?: string | null
           id?: string
           is_tax_deductible?: boolean
           marketplace?: string | null
@@ -153,8 +156,6 @@ export type Database = {
           invoice_number: string | null
           marketplace: string | null
           payment_date: string
-          payment_method: string
-          payment_type: string
           updated_at: string
         }
         Insert: {
@@ -166,8 +167,6 @@ export type Database = {
           invoice_number?: string | null
           marketplace?: string | null
           payment_date?: string
-          payment_method: string
-          payment_type: string
           updated_at?: string
         }
         Update: {
@@ -179,8 +178,6 @@ export type Database = {
           invoice_number?: string | null
           marketplace?: string | null
           payment_date?: string
-          payment_method?: string
-          payment_type?: string
           updated_at?: string
         }
         Relationships: []

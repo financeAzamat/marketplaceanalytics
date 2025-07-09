@@ -21,7 +21,7 @@ export const FinanceSection = () => {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="expenses">Расходы</TabsTrigger>
           <TabsTrigger value="cogs">Себестоимость</TabsTrigger>
-          <TabsTrigger value="payments">Платежи</TabsTrigger>
+          <TabsTrigger value="payments">Доходы</TabsTrigger>
           <TabsTrigger value="file-upload">Загрузка файлов</TabsTrigger>
           <TabsTrigger value="ai-assistant">AI Аналитик</TabsTrigger>
         </TabsList>
