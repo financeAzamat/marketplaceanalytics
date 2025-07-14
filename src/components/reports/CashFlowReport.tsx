@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -93,32 +94,51 @@ export const CashFlowReport = ({ reportId, reportName, month, year, marketplace 
         <CardTitle>Отчет о движении денежных средств</CardTitle>
         <p className="text-sm text-muted-foreground">{reportName}</p>
       </CardHeader>
-      <CardContent className="space-y-6">
-        
-        {/* Поступления по операционной деятельности */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-lg border-b pb-2">Поступления по операционной деятельности</h3>
-          <div className="space-y-1">
-            <div className="flex justify-between">
-              <span>(+) Поступления от продаж Ozon</span>
-              <span className="text-right font-medium">{formatAmount(cashFlowData.operationalIncome * 0.4)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>(+) Поступления от продаж Wildberries</span>
-              <span className="text-right font-medium">{formatAmount(cashFlowData.operationalIncome * 0.6)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>(+) Прочие поступления</span>
-              <span className="text-right font-medium">{formatAmount(0)}</span>
-            </div>
-          </div>
-        </div>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-3/4">Наименование статей</TableHead>
+              <TableHead className="text-right">Сумма</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {/* Поступления по операционной деятельности */}
+            <TableRow className="bg-muted/50">
+              <TableCell className="font-semibold text-lg" colSpan={2}>
+                Поступления по операционной деятельности
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">(+) Поступления от продаж Ozon</TableCell>
+              <TableCell className="text-right font-medium text-green-600">
+                {formatAmount(cashFlowData.operationalIncome * 0.4)}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">(+) Поступления от продаж Wildberries</TableCell>
+              <TableCell className="text-right font-medium text-green-600">
+                {formatAmount(cashFlowData.operationalIncome * 0.6)}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">(+) Прочие поступления</TableCell>
+              <TableCell className="text-right font-medium">
+                {formatAmount(0)}
+              </TableCell>
+            </TableRow>
 
-        {/* Платежи по операционной деятельности - Wildberries */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-lg border-b pb-2">Платежи по операционной деятельности</h3>
-          <h4 className="font-medium text-base">Wildberries</h4>
-          <div className="space-y-1 text-sm">
+            {/* Платежи по операционной деятельности */}
+            <TableRow className="bg-muted/50">
+              <TableCell className="font-semibold text-lg" colSpan={2}>
+                Платежи по операционной деятельности
+              </TableCell>
+            </TableRow>
+            
+            {/* Wildberries */}
+            <TableRow className="bg-muted/30">
+              <TableCell className="font-medium pl-4" colSpan={2}>Wildberries</TableCell>
+            </TableRow>
             {[
               'Возвраты Wildberries',
               'Представительские расходы',
@@ -146,16 +166,18 @@ export const CashFlowReport = ({ reportId, reportName, month, year, marketplace 
               'Прочие платежи',
               'Налоги и пошлины'
             ].map((expense, index) => (
-              <div key={index} className="flex justify-between">
-                <span>(-) {expense}</span>
-                <span className="text-right">{formatAmount(cashFlowData.operationalExpenses[expense] || 0)}</span>
-              </div>
+              <TableRow key={`wb-${index}`}>
+                <TableCell className="pl-8 text-sm">(-) {expense}</TableCell>
+                <TableCell className="text-right text-sm">
+                  {formatAmount(cashFlowData.operationalExpenses[expense] || 0)}
+                </TableCell>
+              </TableRow>
             ))}
-          </div>
 
-          {/* Ozon */}
-          <h4 className="font-medium text-base pt-4">Ozon</h4>
-          <div className="space-y-1 text-sm">
+            {/* Ozon */}
+            <TableRow className="bg-muted/30">
+              <TableCell className="font-medium pl-4" colSpan={2}>Ozon</TableCell>
+            </TableRow>
             {[
               'Возвраты Ozon',
               'Представительские расходы',
@@ -182,16 +204,18 @@ export const CashFlowReport = ({ reportId, reportName, month, year, marketplace 
               'Налоги и пошлины',
               'Прочие платежи'
             ].map((expense, index) => (
-              <div key={index} className="flex justify-between">
-                <span>(-) {expense}</span>
-                <span className="text-right">{formatAmount(cashFlowData.operationalExpenses[expense] || 0)}</span>
-              </div>
+              <TableRow key={`ozon-${index}`}>
+                <TableCell className="pl-8 text-sm">(-) {expense}</TableCell>
+                <TableCell className="text-right text-sm">
+                  {formatAmount(cashFlowData.operationalExpenses[expense] || 0)}
+                </TableCell>
+              </TableRow>
             ))}
-          </div>
 
-          {/* Другое */}
-          <h4 className="font-medium text-base pt-4">Другое</h4>
-          <div className="space-y-1 text-sm">
+            {/* Другое */}
+            <TableRow className="bg-muted/30">
+              <TableCell className="font-medium pl-4" colSpan={2}>Другое</TableCell>
+            </TableRow>
             {[
               'Представительские расходы',
               'Основные средства',
@@ -215,116 +239,128 @@ export const CashFlowReport = ({ reportId, reportName, month, year, marketplace 
               'Налоги и пошлины',
               'Прочие платежи'
             ].map((expense, index) => (
-              <div key={index} className="flex justify-between">
-                <span>(-) {expense}</span>
-                <span className="text-right">{formatAmount(cashFlowData.operationalExpenses[expense] || 0)}</span>
-              </div>
+              <TableRow key={`other-${index}`}>
+                <TableCell className="pl-8 text-sm">(-) {expense}</TableCell>
+                <TableCell className="text-right text-sm">
+                  {formatAmount(cashFlowData.operationalExpenses[expense] || 0)}
+                </TableCell>
+              </TableRow>
             ))}
-          </div>
-        </div>
 
-        {/* Чистый денежный поток от операционной деятельности */}
-        <div className="border-t pt-4">
-          <div className="flex justify-between font-semibold text-lg">
-            <span>ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК ОТ ОПЕРАЦИОННОЙ ДЕЯТЕЛЬНОСТИ</span>
-            <span className={`text-right ${netOperationalFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatAmount(netOperationalFlow)}
-            </span>
-          </div>
-        </div>
+            {/* Итог операционной деятельности */}
+            <TableRow className="border-t-2 bg-blue-50">
+              <TableCell className="font-bold text-lg">
+                ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК ОТ ОПЕРАЦИОННОЙ ДЕЯТЕЛЬНОСТИ
+              </TableCell>
+              <TableCell className={`text-right font-bold text-lg ${netOperationalFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatAmount(netOperationalFlow)}
+              </TableCell>
+            </TableRow>
 
-        {/* Инвестиционная деятельность */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-lg border-b pb-2">Инвестиционная деятельность</h3>
-          <h4 className="font-medium text-base">Wildberries</h4>
-          <div className="flex justify-between text-sm">
-            <span>(+) Привлечение инвестиций</span>
-            <span className="text-right">{formatAmount(0)}</span>
-          </div>
-          <h4 className="font-medium text-base">Ozon</h4>
-          <div className="flex justify-between text-sm">
-            <span>(+) Привлечение инвестиций</span>
-            <span className="text-right">{formatAmount(0)}</span>
-          </div>
-          <h4 className="font-medium text-base">Другое</h4>
-          <div className="flex justify-between text-sm">
-            <span>(+) Привлечение инвестиций</span>
-            <span className="text-right">{formatAmount(cashFlowData.investmentIncome)}</span>
-          </div>
-        </div>
+            {/* Инвестиционная деятельность */}
+            <TableRow className="bg-muted/50">
+              <TableCell className="font-semibold text-lg" colSpan={2}>
+                Инвестиционная деятельность
+              </TableCell>
+            </TableRow>
+            <TableRow className="bg-muted/30">
+              <TableCell className="font-medium pl-4" colSpan={2}>Wildberries</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-8">(+) Привлечение инвестиций</TableCell>
+              <TableCell className="text-right">{formatAmount(0)}</TableCell>
+            </TableRow>
+            <TableRow className="bg-muted/30">
+              <TableCell className="font-medium pl-4" colSpan={2}>Ozon</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-8">(+) Привлечение инвестиций</TableCell>
+              <TableCell className="text-right">{formatAmount(0)}</TableCell>
+            </TableRow>
+            <TableRow className="bg-muted/30">
+              <TableCell className="font-medium pl-4" colSpan={2}>Другое</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-8">(+) Привлечение инвестиций</TableCell>
+              <TableCell className="text-right">{formatAmount(cashFlowData.investmentIncome)}</TableCell>
+            </TableRow>
 
-        <div className="border-t pt-4">
-          <div className="flex justify-between font-semibold text-lg">
-            <span>ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК ОТ ИНВЕСТИЦИОННОЙ ДЕЯТЕЛЬНОСТИ</span>
-            <span className={`text-right ${netInvestmentFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatAmount(netInvestmentFlow)}
-            </span>
-          </div>
-        </div>
+            <TableRow className="border-t-2 bg-blue-50">
+              <TableCell className="font-bold text-lg">
+                ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК ОТ ИНВЕСТИЦИОННОЙ ДЕЯТЕЛЬНОСТИ
+              </TableCell>
+              <TableCell className={`text-right font-bold text-lg ${netInvestmentFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatAmount(netInvestmentFlow)}
+              </TableCell>
+            </TableRow>
 
-        {/* Финансовая деятельность */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-lg border-b pb-2">Поступления от финансовой деятельности</h3>
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span>(+) Получение займа</span>
-              <span className="text-right">{formatAmount(0)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>(+) Проценты по комиссиям и вкладам</span>
-              <span className="text-right">{formatAmount(0)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>(+) Поступления от собственника</span>
-              <span className="text-right">{formatAmount(cashFlowData.financialIncome)}</span>
-            </div>
-          </div>
+            {/* Финансовая деятельность */}
+            <TableRow className="bg-muted/50">
+              <TableCell className="font-semibold text-lg" colSpan={2}>
+                Поступления от финансовой деятельности
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">(+) Получение займа</TableCell>
+              <TableCell className="text-right">{formatAmount(0)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">(+) Проценты по комиссиям и вкладам</TableCell>
+              <TableCell className="text-right">{formatAmount(0)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">(+) Поступления от собственника</TableCell>
+              <TableCell className="text-right">{formatAmount(cashFlowData.financialIncome)}</TableCell>
+            </TableRow>
 
-          <h4 className="font-medium text-base pt-4">Платежи по финансовой деятельности</h4>
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span>(-) Займ (погашение тела долга)</span>
-              <span className="text-right">{formatAmount(0)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>(-) Займ (выплата процентов)</span>
-              <span className="text-right">{formatAmount(0)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>(-) Выплата дивидендов</span>
-              <span className="text-right">{formatAmount(cashFlowData.financialExpenses)}</span>
-            </div>
-          </div>
-        </div>
+            <TableRow className="bg-muted/50">
+              <TableCell className="font-semibold text-lg" colSpan={2}>
+                Платежи по финансовой деятельности
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">(-) Займ (погашение тела долга)</TableCell>
+              <TableCell className="text-right">{formatAmount(0)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">(-) Займ (выплата процентов)</TableCell>
+              <TableCell className="text-right">{formatAmount(0)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">(-) Выплата дивидендов</TableCell>
+              <TableCell className="text-right">{formatAmount(cashFlowData.financialExpenses)}</TableCell>
+            </TableRow>
 
-        <div className="border-t pt-4">
-          <div className="flex justify-between font-semibold text-lg">
-            <span>ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК ОТ ФИНАНСОВОЙ ДЕЯТЕЛЬНОСТИ</span>
-            <span className={`text-right ${netFinancialFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatAmount(netFinancialFlow)}
-            </span>
-          </div>
-        </div>
+            <TableRow className="border-t-2 bg-blue-50">
+              <TableCell className="font-bold text-lg">
+                ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК ОТ ФИНАНСОВОЙ ДЕЯТЕЛЬНОСТИ
+              </TableCell>
+              <TableCell className={`text-right font-bold text-lg ${netFinancialFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatAmount(netFinancialFlow)}
+              </TableCell>
+            </TableRow>
 
-        {/* Итоговые показатели */}
-        <div className="border-t-2 pt-4 space-y-2">
-          <div className="flex justify-between font-bold text-xl">
-            <span>ИТОГО ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК КОМПАНИИ</span>
-            <span className={`text-right ${totalNetFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatAmount(totalNetFlow)}
-            </span>
-          </div>
-          <div className="flex justify-between font-semibold">
-            <span>ОСТАТОК ДС НА НАЧАЛО ПЕРИОДА</span>
-            <span className="text-right">{formatAmount(0)}</span>
-          </div>
-          <div className="flex justify-between font-semibold">
-            <span>ОСТАТОК ДС НА КОНЕЦ ПЕРИОДА</span>
-            <span className={`text-right ${totalNetFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatAmount(totalNetFlow)}
-            </span>
-          </div>
-        </div>
+            {/* Итоговые показатели */}
+            <TableRow className="border-t-4 bg-yellow-50">
+              <TableCell className="font-bold text-xl">
+                ИТОГО ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК КОМПАНИИ
+              </TableCell>
+              <TableCell className={`text-right font-bold text-xl ${totalNetFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatAmount(totalNetFlow)}
+              </TableCell>
+            </TableRow>
+            <TableRow className="bg-gray-50">
+              <TableCell className="font-semibold">ОСТАТОК ДС НА НАЧАЛО ПЕРИОДА</TableCell>
+              <TableCell className="text-right font-semibold">{formatAmount(0)}</TableCell>
+            </TableRow>
+            <TableRow className="bg-gray-50">
+              <TableCell className="font-semibold">ОСТАТОК ДС НА КОНЕЦ ПЕРИОДА</TableCell>
+              <TableCell className={`text-right font-semibold ${totalNetFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatAmount(totalNetFlow)}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );
