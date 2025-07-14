@@ -295,6 +295,24 @@ export const AdvancedReports = () => {
         </CardContent>
       </Card>
 
+      {/* Отображение выбранного отчета */}
+      {selectedReport && selectedReport.report_type === 'dds' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Просмотр отчета</h3>
+            <Button variant="outline" onClick={() => setSelectedReport(null)}>
+              Закрыть
+            </Button>
+          </div>
+          <CashFlowReport 
+            reportId={selectedReport.id}
+            reportName={selectedReport.report_name}
+            month={new Date(selectedReport.date_from).getMonth() + 1}
+            year={new Date(selectedReport.date_from).getFullYear()}
+            marketplace={selectedReport.marketplace}
+          />
+        </div>
+      )}
       
       <Card>
         <CardHeader>
@@ -351,25 +369,6 @@ export const AdvancedReports = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Отображение выбранного отчета */}
-      {selectedReport && selectedReport.report_type === 'dds' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Просмотр отчета</h3>
-            <Button variant="outline" onClick={() => setSelectedReport(null)}>
-              Закрыть
-            </Button>
-          </div>
-          <CashFlowReport 
-            reportId={selectedReport.id}
-            reportName={selectedReport.report_name}
-            month={new Date(selectedReport.date_from).getMonth() + 1}
-            year={new Date(selectedReport.date_from).getFullYear()}
-            marketplace={selectedReport.marketplace}
-          />
-        </div>
-      )}
     </div>
   );
 };
