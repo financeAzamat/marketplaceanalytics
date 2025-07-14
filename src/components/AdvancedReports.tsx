@@ -95,7 +95,9 @@ export const AdvancedReports = () => {
         title: "Отчет создан",
         description: "Отчет успешно сгенерирован и готов к скачиванию",
       });
+      // Принудительно обновляем кэш и перезапрашиваем данные
       queryClient.invalidateQueries({ queryKey: ['reports'] });
+      queryClient.refetchQueries({ queryKey: ['reports'] });
     },
     onError: (error: any) => {
       toast({
