@@ -2,43 +2,39 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { 
   FileText, 
   Download, 
-  CalendarIcon, 
   BarChart3,
-  Loader2
+  Loader2,
+  Eye
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { CashFlowReport } from './reports/CashFlowReport';
 
 interface ReportConfig {
-  reportType: 'sales' | 'profit' | 'commissions' | 'costs';
+  reportType: 'dds' | 'piu';
   marketplace: 'wildberries' | 'ozon' | 'all';
-  dateFrom: Date;
-  dateTo: Date;
+  month: number;
+  year: number;
 }
 
 export const AdvancedReports = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedReport, setSelectedReport] = useState<any>(null);
   
   const [reportConfig, setReportConfig] = useState<ReportConfig>({
-    reportType: 'sales',
+    reportType: 'dds',
     marketplace: 'all',
-    dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    dateTo: new Date(),
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
   });
-
-  const [showDateFromPicker, setShowDateFromPicker] = useState(false);
-  const [showDateToPicker, setShowDateToPicker] = useState(false);
 
   const { data: reports, isLoading } = useQuery({
     queryKey: ['reports'],
@@ -55,7 +51,12 @@ export const AdvancedReports = () => {
 
   const generateReportMutation = useMutation({
     mutationFn: async (config: ReportConfig) => {
-      const reportName = `${getReportTypeName(config.reportType)} - ${config.marketplace === 'all' ? 'Все маркетплейсы' : config.marketplace} - ${format(config.dateFrom, 'dd.MM.yyyy', { locale: ru })}-${format(config.dateTo, 'dd.MM.yyyy', { locale: ru })}`;
+      const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
+                         'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+      const reportName = `${getReportTypeName(config.reportType)} - ${config.marketplace === 'all' ? 'Все маркетплейсы' : config.marketplace} - ${monthNames[config.month - 1]} ${config.year}`;
+      
+      const dateFrom = new Date(config.year, config.month - 1, 1);
+      const dateTo = new Date(config.year, config.month, 0);
       
       // Create report record
       const { data: report, error } = await supabase
@@ -64,8 +65,8 @@ export const AdvancedReports = () => {
           report_name: reportName,
           report_type: config.reportType,
           marketplace: config.marketplace,
-          date_from: config.dateFrom.toISOString().split('T')[0],
-          date_to: config.dateTo.toISOString().split('T')[0],
+          date_from: dateFrom.toISOString().split('T')[0],
+          date_to: dateTo.toISOString().split('T')[0],
           status: 'generating',
         })
         .select()
@@ -153,10 +154,8 @@ export const AdvancedReports = () => {
 
   const getReportTypeName = (type: string) => {
     const names = {
-      sales: 'Отчет по продажам',
-      profit: 'Отчет по прибыли',
-      commissions: 'Отчет по комиссиям',
-      costs: 'Отчет по расходам',
+      dds: 'ДДС',
+      piu: 'ПиУ',
     };
     return names[type as keyof typeof names] || type;
   };
@@ -205,10 +204,8 @@ export const AdvancedReports = () => {
                   <SelectValue placeholder="Выберите тип" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sales">Продажи</SelectItem>
-                  <SelectItem value="profit">Прибыль</SelectItem>
-                  <SelectItem value="commissions">Комиссии</SelectItem>
-                  <SelectItem value="costs">Расходы</SelectItem>
+                  <SelectItem value="dds">ДДС</SelectItem>
+                  <SelectItem value="piu">ПиУ</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -233,67 +230,55 @@ export const AdvancedReports = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Дата от</label>
-              <Popover open={showDateFromPicker} onOpenChange={setShowDateFromPicker}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !reportConfig.dateFrom && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {reportConfig.dateFrom ? format(reportConfig.dateFrom, "dd.MM.yyyy", { locale: ru }) : "Выберите дату"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={reportConfig.dateFrom}
-                    onSelect={(date) => {
-                      if (date) {
-                        setReportConfig(prev => ({ ...prev, dateFrom: date }));
-                        setShowDateFromPicker(false);
-                      }
-                    }}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
+              <label className="text-sm font-medium">Месяц</label>
+              <Select
+                value={reportConfig.month.toString()}
+                onValueChange={(value) => 
+                  setReportConfig(prev => ({ ...prev, month: parseInt(value) }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите месяц" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Январь</SelectItem>
+                  <SelectItem value="2">Февраль</SelectItem>
+                  <SelectItem value="3">Март</SelectItem>
+                  <SelectItem value="4">Апрель</SelectItem>
+                  <SelectItem value="5">Май</SelectItem>
+                  <SelectItem value="6">Июнь</SelectItem>
+                  <SelectItem value="7">Июль</SelectItem>
+                  <SelectItem value="8">Август</SelectItem>
+                  <SelectItem value="9">Сентябрь</SelectItem>
+                  <SelectItem value="10">Октябрь</SelectItem>
+                  <SelectItem value="11">Ноябрь</SelectItem>
+                  <SelectItem value="12">Декабрь</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Дата до</label>
-              <Popover open={showDateToPicker} onOpenChange={setShowDateToPicker}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !reportConfig.dateTo && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {reportConfig.dateTo ? format(reportConfig.dateTo, "dd.MM.yyyy", { locale: ru }) : "Выберите дату"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={reportConfig.dateTo}
-                    onSelect={(date) => {
-                      if (date) {
-                        setReportConfig(prev => ({ ...prev, dateTo: date }));
-                        setShowDateToPicker(false);
-                      }
-                    }}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
+              <label className="text-sm font-medium">Год</label>
+              <Select
+                value={reportConfig.year.toString()}
+                onValueChange={(value) => 
+                  setReportConfig(prev => ({ ...prev, year: parseInt(value) }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите год" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 10 }, (_, i) => {
+                    const year = new Date().getFullYear() - 5 + i;
+                    return (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -334,14 +319,24 @@ export const AdvancedReports = () => {
                   <div className="flex items-center space-x-2">
                     {getStatusBadge(report.status)}
                     {report.status === 'generated' && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDownload(report)}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Скачать
-                      </Button>
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setSelectedReport(report)}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Посмотреть
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDownload(report)}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Скачать
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -354,6 +349,25 @@ export const AdvancedReports = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Отображение выбранного отчета */}
+      {selectedReport && selectedReport.report_type === 'dds' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Просмотр отчета</h3>
+            <Button variant="outline" onClick={() => setSelectedReport(null)}>
+              Закрыть
+            </Button>
+          </div>
+          <CashFlowReport 
+            reportId={selectedReport.id}
+            reportName={selectedReport.report_name}
+            month={new Date(selectedReport.date_from).getMonth() + 1}
+            year={new Date(selectedReport.date_from).getFullYear()}
+            marketplace={selectedReport.marketplace}
+          />
+        </div>
+      )}
     </div>
   );
 };
