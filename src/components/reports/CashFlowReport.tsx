@@ -94,49 +94,140 @@ export const CashFlowReport = ({ reportId, reportName, month, year, marketplace 
         <p className="text-sm text-muted-foreground">{reportName}</p>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Операционная деятельность */}
+        
+        {/* Поступления по операционной деятельности */}
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold">Поступления по операционной деятельности</h3>
-          <div className="grid grid-cols-2 gap-4 pl-4">
+          <h3 className="font-semibold text-lg border-b pb-2">Поступления по операционной деятельности</h3>
+          <div className="space-y-1">
             <div className="flex justify-between">
-              <span>(+) Поступления от продаж {marketplace === 'wildberries' ? 'Wildberries' : marketplace === 'ozon' ? 'Ozon' : 'всех маркетплейсов'}</span>
-              <span className="font-medium text-green-600">{formatAmount(cashFlowData.operationalIncome)}</span>
+              <span>(+) Поступления от продаж Ozon</span>
+              <span className="text-right font-medium">{formatAmount(cashFlowData.operationalIncome * 0.4)}</span>
             </div>
-            {marketplace === 'all' && (
-              <>
-                <div className="flex justify-between">
-                  <span>(+) Поступления от продаж Wildberries</span>
-                  <span className="font-medium text-green-600">{formatAmount(cashFlowData.operationalIncome * 0.6)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>(+) Поступления от продаж Ozon</span>
-                  <span className="font-medium text-green-600">{formatAmount(cashFlowData.operationalIncome * 0.4)}</span>
-                </div>
-              </>
-            )}
+            <div className="flex justify-between">
+              <span>(+) Поступления от продаж Wildberries</span>
+              <span className="text-right font-medium">{formatAmount(cashFlowData.operationalIncome * 0.6)}</span>
+            </div>
             <div className="flex justify-between">
               <span>(+) Прочие поступления</span>
-              <span className="font-medium text-green-600">{formatAmount(0)}</span>
+              <span className="text-right font-medium">{formatAmount(0)}</span>
             </div>
           </div>
         </div>
 
+        {/* Платежи по операционной деятельности - Wildberries */}
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold">Платежи по операционной деятельности</h3>
-          <div className="space-y-2 pl-4">
-            {Object.entries(cashFlowData.operationalExpenses).map(([category, amount]) => (
-              <div key={category} className="flex justify-between">
-                <span>(-) {category}</span>
-                <span className="font-medium text-red-600">{formatAmount(amount)}</span>
+          <h3 className="font-semibold text-lg border-b pb-2">Платежи по операционной деятельности</h3>
+          <h4 className="font-medium text-base">Wildberries</h4>
+          <div className="space-y-1 text-sm">
+            {[
+              'Возвраты Wildberries',
+              'Представительские расходы',
+              'Основные средства',
+              'HR',
+              'Расходы на расчетно-кассовое обслуживание',
+              'Фонд оплаты труда',
+              'Аренда',
+              'Закупка товара',
+              'Образцы; Лекала',
+              'Внешняя логистика',
+              'Сервисы; Программное обеспечение',
+              'Связь и интернет',
+              'Услуги Фулфилмента',
+              'Регистрация ИП',
+              'Приемка товара',
+              'Штрафы',
+              'Штраф за смену характеристик',
+              'Штрафах за отсутствие обязательной маркировки',
+              'Продвижение товара',
+              'Создание контента',
+              'Расходный материал',
+              'Честный Знак; КиЗы; Гос. Пошлины',
+              'Сертификация и регистрация торговых марок',
+              'Прочие платежи',
+              'Налоги и пошлины'
+            ].map((expense, index) => (
+              <div key={index} className="flex justify-between">
+                <span>(-) {expense}</span>
+                <span className="text-right">{formatAmount(cashFlowData.operationalExpenses[expense] || 0)}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Ozon */}
+          <h4 className="font-medium text-base pt-4">Ozon</h4>
+          <div className="space-y-1 text-sm">
+            {[
+              'Возвраты Ozon',
+              'Представительские расходы',
+              'Основные средства',
+              'HR',
+              'Расходы на расчетно-кассовое обслуживание',
+              'Фонд оплаты труда',
+              'Аренда',
+              'Закупка товара',
+              'Образцы; Лекала',
+              'Внешняя логистика',
+              'Сервисы; Программное обеспечение',
+              'Связь и интернет',
+              'Услуги Фулфилмента',
+              'Регистрация ИП',
+              'Комиссии',
+              'Комиссия за возврат',
+              'Комиссия за доставку',
+              'Продвижение товара',
+              'Создание контента',
+              'Расходный материал',
+              'Честный Знак; КиЗы; Гос. Пошлины',
+              'Сертификация и регистрация торговых марок',
+              'Налоги и пошлины',
+              'Прочие платежи'
+            ].map((expense, index) => (
+              <div key={index} className="flex justify-between">
+                <span>(-) {expense}</span>
+                <span className="text-right">{formatAmount(cashFlowData.operationalExpenses[expense] || 0)}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Другое */}
+          <h4 className="font-medium text-base pt-4">Другое</h4>
+          <div className="space-y-1 text-sm">
+            {[
+              'Представительские расходы',
+              'Основные средства',
+              'HR',
+              'Расходы на расчетно-кассовое обслуживание',
+              'Фонд оплаты труда',
+              'Аренда',
+              'Закупка товара',
+              'Образцы; Лекала',
+              'Внешняя логистика',
+              'Сервисы; Программное обеспечение',
+              'Связь и интернет',
+              'Услуги Фулфилмента',
+              'Регистрация ИП',
+              'Приемка товара',
+              'Продвижение товара',
+              'Создание контента',
+              'Расходный материал',
+              'Честный Знак; КиЗы; Гос. Пошлины',
+              'Сертификация и регистрация торговых марок',
+              'Налоги и пошлины',
+              'Прочие платежи'
+            ].map((expense, index) => (
+              <div key={index} className="flex justify-between">
+                <span>(-) {expense}</span>
+                <span className="text-right">{formatAmount(cashFlowData.operationalExpenses[expense] || 0)}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border-t pt-3">
+        {/* Чистый денежный поток от операционной деятельности */}
+        <div className="border-t pt-4">
           <div className="flex justify-between font-semibold text-lg">
             <span>ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК ОТ ОПЕРАЦИОННОЙ ДЕЯТЕЛЬНОСТИ</span>
-            <span className={netOperationalFlow >= 0 ? 'text-green-600' : 'text-red-600'}>
+            <span className={`text-right ${netOperationalFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatAmount(netOperationalFlow)}
             </span>
           </div>
@@ -144,16 +235,28 @@ export const CashFlowReport = ({ reportId, reportName, month, year, marketplace 
 
         {/* Инвестиционная деятельность */}
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold">Инвестиционная деятельность</h3>
-          <div className="pl-4">
-            <div className="flex justify-between">
-              <span>(+) Привлечение инвестиций</span>
-              <span className="font-medium text-green-600">{formatAmount(cashFlowData.investmentIncome)}</span>
-            </div>
+          <h3 className="font-semibold text-lg border-b pb-2">Инвестиционная деятельность</h3>
+          <h4 className="font-medium text-base">Wildberries</h4>
+          <div className="flex justify-between text-sm">
+            <span>(+) Привлечение инвестиций</span>
+            <span className="text-right">{formatAmount(0)}</span>
           </div>
-          <div className="flex justify-between font-semibold">
+          <h4 className="font-medium text-base">Ozon</h4>
+          <div className="flex justify-between text-sm">
+            <span>(+) Привлечение инвестиций</span>
+            <span className="text-right">{formatAmount(0)}</span>
+          </div>
+          <h4 className="font-medium text-base">Другое</h4>
+          <div className="flex justify-between text-sm">
+            <span>(+) Привлечение инвестиций</span>
+            <span className="text-right">{formatAmount(cashFlowData.investmentIncome)}</span>
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
+          <div className="flex justify-between font-semibold text-lg">
             <span>ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК ОТ ИНВЕСТИЦИОННОЙ ДЕЯТЕЛЬНОСТИ</span>
-            <span className={netInvestmentFlow >= 0 ? 'text-green-600' : 'text-red-600'}>
+            <span className={`text-right ${netInvestmentFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatAmount(netInvestmentFlow)}
             </span>
           </div>
@@ -161,61 +264,63 @@ export const CashFlowReport = ({ reportId, reportName, month, year, marketplace 
 
         {/* Финансовая деятельность */}
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold">Поступления от финансовой деятельности</h3>
-          <div className="space-y-2 pl-4">
+          <h3 className="font-semibold text-lg border-b pb-2">Поступления от финансовой деятельности</h3>
+          <div className="space-y-1 text-sm">
             <div className="flex justify-between">
               <span>(+) Получение займа</span>
-              <span className="font-medium text-green-600">{formatAmount(0)}</span>
+              <span className="text-right">{formatAmount(0)}</span>
             </div>
             <div className="flex justify-between">
               <span>(+) Проценты по комиссиям и вкладам</span>
-              <span className="font-medium text-green-600">{formatAmount(0)}</span>
+              <span className="text-right">{formatAmount(0)}</span>
             </div>
             <div className="flex justify-between">
               <span>(+) Поступления от собственника</span>
-              <span className="font-medium text-green-600">{formatAmount(cashFlowData.financialIncome)}</span>
+              <span className="text-right">{formatAmount(cashFlowData.financialIncome)}</span>
             </div>
           </div>
 
-          <h3 className="text-lg font-semibold">Платежи по финансовой деятельности</h3>
-          <div className="space-y-2 pl-4">
+          <h4 className="font-medium text-base pt-4">Платежи по финансовой деятельности</h4>
+          <div className="space-y-1 text-sm">
             <div className="flex justify-between">
               <span>(-) Займ (погашение тела долга)</span>
-              <span className="font-medium text-red-600">{formatAmount(0)}</span>
+              <span className="text-right">{formatAmount(0)}</span>
             </div>
             <div className="flex justify-between">
               <span>(-) Займ (выплата процентов)</span>
-              <span className="font-medium text-red-600">{formatAmount(0)}</span>
+              <span className="text-right">{formatAmount(0)}</span>
             </div>
             <div className="flex justify-between">
               <span>(-) Выплата дивидендов</span>
-              <span className="font-medium text-red-600">{formatAmount(cashFlowData.financialExpenses)}</span>
+              <span className="text-right">{formatAmount(cashFlowData.financialExpenses)}</span>
             </div>
           </div>
-          
-          <div className="flex justify-between font-semibold">
+        </div>
+
+        <div className="border-t pt-4">
+          <div className="flex justify-between font-semibold text-lg">
             <span>ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК ОТ ФИНАНСОВОЙ ДЕЯТЕЛЬНОСТИ</span>
-            <span className={netFinancialFlow >= 0 ? 'text-green-600' : 'text-red-600'}>
+            <span className={`text-right ${netFinancialFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatAmount(netFinancialFlow)}
             </span>
           </div>
         </div>
 
-        {/* Итоги */}
-        <div className="border-t pt-3 space-y-2">
+        {/* Итоговые показатели */}
+        <div className="border-t-2 pt-4 space-y-2">
           <div className="flex justify-between font-bold text-xl">
             <span>ИТОГО ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК КОМПАНИИ</span>
-            <span className={totalNetFlow >= 0 ? 'text-green-600' : 'text-red-600'}>
+            <span className={`text-right ${totalNetFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatAmount(totalNetFlow)}
             </span>
           </div>
           <div className="flex justify-between font-semibold">
             <span>ОСТАТОК ДС НА НАЧАЛО ПЕРИОДА</span>
-            <span>{formatAmount(0)}</span>
+            <span className="text-right">{formatAmount(0)}</span>
           </div>
           <div className="flex justify-between font-semibold">
             <span>ОСТАТОК ДС НА КОНЕЦ ПЕРИОДА</span>
-            <span className={totalNetFlow >= 0 ? 'text-green-600' : 'text-red-600'}>
+            <span className={`text-right ${totalNetFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatAmount(totalNetFlow)}
             </span>
           </div>
