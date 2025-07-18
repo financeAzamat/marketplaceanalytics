@@ -326,6 +326,12 @@ export const ProfitLossReport = ({ reportId, reportName, month, year, marketplac
               <TableCell>Расходы прочих направлений</TableCell>
               <TableCell className="text-right">{otherExpenses.toLocaleString()}</TableCell>
             </TableRow>
+            {indirectCategories.map(category => (
+              <TableRow key={`other-${category}`}>
+                <TableCell className="pl-8">{category}</TableCell>
+                <TableCell className="text-right">{getMarketplaceExpense("Прочее", category).toLocaleString()}</TableCell>
+              </TableRow>
+            ))}
 
             <TableRow className="font-semibold bg-muted/50">
               <TableCell>Прибыль до налогов</TableCell>
