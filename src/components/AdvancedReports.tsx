@@ -16,6 +16,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CashFlowReport } from './reports/CashFlowReport';
+import { ProfitLossReport } from './reports/ProfitLossReport';
 
 interface ReportConfig {
   reportType: 'dds' | 'piu';
@@ -305,6 +306,24 @@ export const AdvancedReports = () => {
             </Button>
           </div>
           <CashFlowReport 
+            reportId={selectedReport.id}
+            reportName={selectedReport.report_name}
+            month={new Date(selectedReport.date_from).getMonth() + 1}
+            year={new Date(selectedReport.date_from).getFullYear()}
+            marketplace={selectedReport.marketplace}
+          />
+        </div>
+      )}
+      
+      {selectedReport && selectedReport.report_type === 'piu' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Просмотр отчета</h3>
+            <Button variant="outline" onClick={() => setSelectedReport(null)}>
+              Закрыть
+            </Button>
+          </div>
+          <ProfitLossReport 
             reportId={selectedReport.id}
             reportName={selectedReport.report_name}
             month={new Date(selectedReport.date_from).getMonth() + 1}
