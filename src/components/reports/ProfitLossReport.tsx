@@ -87,16 +87,41 @@ export const ProfitLossReport = ({ reportId, reportName, month, year, marketplac
     return data.cogs[marketplace] || 0;
   };
 
+  // Direct expense categories for Wildberries
+  const wildberriesDirectCategories = [
+    'Возвраты', 'Расходы на расчетно-кассовое обслуживание', 'Фонд оплаты труда',
+    'Образцы; Лекала', 'Внешняя логистика', 'Приемка товара', 'Штрафы',
+    'Штраф за смену характеристик', 'Штрафах за отсутствие обязательной маркировки',
+    'Продвижение товара', 'Создание контента', 'Расходный материал',
+    'Честный Знак; КиЗы; Гос. Пошлины'
+  ];
+
+  // Direct expense categories for Ozon
+  const ozonDirectCategories = [
+    'Возвраты', 'Расходы на расчетно-кассовое обслуживание', 'Фонд оплаты труда',
+    'Образцы; Лекала', 'Внешняя логистика', 'Комиссии', 'Комиссия за возврат',
+    'Комиссия за доставку', 'Продвижение товара', 'Создание контента',
+    'Расходный материал', 'Честный Знак; КиЗы; Гос. Пошлины'
+  ];
+
+  // Indirect expense categories
+  const indirectCategories = [
+    'Представительские расходы', 'Основные средства', 'HR',
+    'Расходы на расчетно-кассовое обслуживание', 'Фонд оплаты труда', 'Аренда',
+    'Внешняя логистика', 'Сервисы; Программное обеспечение', 'Связь и интернет',
+    'Услуги Фулфилмента', 'Регистрация ИП', 'Расходный материал',
+    'Честный Знак; КиЗы; Гос. Пошлины', 'Сертификация и регистрация торговых марок',
+    'Продвижение товара', 'Создание контента'
+  ];
+
+  const calculateDirectExpenses = (marketplace: string) => {
+    const categories = marketplace === 'Wildberries' ? wildberriesDirectCategories : ozonDirectCategories;
+    return categories.reduce((sum, category) => sum + getMarketplaceExpense(marketplace, category), 0);
+  };
+
   const calculateOperationalProfit = (marketplace: string) => {
     const revenue = getMarketplaceRevenue(marketplace);
-    const directExpenses = [
-      'Возвраты', 'Расходы на расчетно-кассовое обслуживание', 'Фонд оплаты труда',
-      'Образцы; Лекала', 'Внешняя логистика', 'Приемка товара', 'Штрафы',
-      'Штраф за смену характеристик', 'Штрафах за отсутствие обязательной маркировки',
-      'Продвижение товара', 'Создание контента', 'Расходный материал',
-      'Честный Знак; КиЗы; Гос. Пошлины', 'Комиссии', 'Комиссия за возврат', 'Комиссия за доставку'
-    ].reduce((sum, category) => sum + getMarketplaceExpense(marketplace, category), 0);
-    
+    const directExpenses = calculateDirectExpenses(marketplace);
     const cogs = getMarketplaceCOGS(marketplace);
     return revenue - directExpenses - cogs;
   };
@@ -174,7 +199,7 @@ export const ProfitLossReport = ({ reportId, reportName, month, year, marketplac
             <TableRow className="font-semibold bg-muted/50">
               <TableCell>Прямые расходы по маркетплейсам</TableCell>
               <TableCell className="text-right">
-                {(getMarketplaceCOGS('Wildberries') + getMarketplaceCOGS('Ozon')).toLocaleString()}
+                {(calculateDirectExpenses('Wildberries') + calculateDirectExpenses('Ozon') + getMarketplaceCOGS('Wildberries') + getMarketplaceCOGS('Ozon')).toLocaleString()}
               </TableCell>
             </TableRow>
             
@@ -182,19 +207,27 @@ export const ProfitLossReport = ({ reportId, reportName, month, year, marketplac
               <TableCell className="pl-4">Wildberries</TableCell>
               <TableCell className="text-right"></TableCell>
             </TableRow>
-            <TableRow>
-              <TableCell className="pl-8">Себестоимость</TableCell>
-              <TableCell className="text-right">{getMarketplaceCOGS('Wildberries').toLocaleString()}</TableCell>
-            </TableRow>
+            {['Возвраты', 'Себестоимость', 'Расходы на расчетно-кассовое обслуживание', 'Фонд оплаты труда', 'Образцы; Лекала', 'Внешняя логистика', 'Приемка товара', 'Штрафы', 'Штраф за смену характеристик', 'Штрафах за отсутствие обязательной маркировки', 'Продвижение товара', 'Создание контента', 'Расходный материал', 'Честный Знак; КиЗы; Гос. Пошлины'].map(category => (
+              <TableRow key={`wb-${category}`}>
+                <TableCell className="pl-8">{category}</TableCell>
+                <TableCell className="text-right">
+                  {category === 'Себестоимость' ? getMarketplaceCOGS('Wildberries').toLocaleString() : getMarketplaceExpense('Wildberries', category).toLocaleString()}
+                </TableCell>
+              </TableRow>
+            ))}
 
             <TableRow className="font-medium">
               <TableCell className="pl-4">Ozon</TableCell>
               <TableCell className="text-right"></TableCell>
             </TableRow>
-            <TableRow>
-              <TableCell className="pl-8">Себестоимость</TableCell>
-              <TableCell className="text-right">{getMarketplaceCOGS('Ozon').toLocaleString()}</TableCell>
-            </TableRow>
+            {['Возвраты', 'Себестоимость', 'Расходы на расчетно-кассовое обслуживание', 'Фонд оплаты труда', 'Образцы; Лекала', 'Внешняя логистика', 'Комиссии', 'Комиссия за возврат', 'Комиссия за доставку', 'Продвижение товара', 'Создание контента', 'Расходный материал', 'Честный Знак; КиЗы; Гос. Пошлины'].map(category => (
+              <TableRow key={`ozon-${category}`}>
+                <TableCell className="pl-8">{category}</TableCell>
+                <TableCell className="text-right">
+                  {category === 'Себестоимость' ? getMarketplaceCOGS('Ozon').toLocaleString() : getMarketplaceExpense('Ozon', category).toLocaleString()}
+                </TableCell>
+              </TableRow>
+            ))}
 
             <TableRow className="font-semibold bg-muted/50">
               <TableCell>Операционная прибыль</TableCell>
@@ -229,6 +262,35 @@ export const ProfitLossReport = ({ reportId, reportName, month, year, marketplac
             </TableRow>
 
             <TableRow className="font-semibold bg-muted/50">
+              <TableCell>Косвенные расходы</TableCell>
+              <TableCell className="text-right">
+                {(indirectCategories.reduce((sum, category) => sum + getMarketplaceExpense('Wildberries', category) + getMarketplaceExpense('Ozon', category), 0)).toLocaleString()}
+              </TableCell>
+            </TableRow>
+            
+            <TableRow className="font-medium">
+              <TableCell className="pl-4">Wildberries</TableCell>
+              <TableCell className="text-right"></TableCell>
+            </TableRow>
+            {indirectCategories.map(category => (
+              <TableRow key={`wb-indirect-${category}`}>
+                <TableCell className="pl-8">{category}</TableCell>
+                <TableCell className="text-right">{getMarketplaceExpense('Wildberries', category).toLocaleString()}</TableCell>
+              </TableRow>
+            ))}
+
+            <TableRow className="font-medium">
+              <TableCell className="pl-4">Ozon</TableCell>
+              <TableCell className="text-right"></TableCell>
+            </TableRow>
+            {indirectCategories.map(category => (
+              <TableRow key={`ozon-indirect-${category}`}>
+                <TableCell className="pl-8">{category}</TableCell>
+                <TableCell className="text-right">{getMarketplaceExpense('Ozon', category).toLocaleString()}</TableCell>
+              </TableRow>
+            ))}
+
+            <TableRow className="font-semibold bg-muted/50">
               <TableCell>Прибыль маркетплейсов</TableCell>
               <TableCell className="text-right">{(wildberriesMarketplaceProfit + ozonMarketplaceProfit).toLocaleString()}</TableCell>
             </TableRow>
@@ -239,6 +301,25 @@ export const ProfitLossReport = ({ reportId, reportName, month, year, marketplac
             <TableRow>
               <TableCell className="pl-8">Ozon</TableCell>
               <TableCell className="text-right">{ozonMarketplaceProfit.toLocaleString()}</TableCell>
+            </TableRow>
+
+            <TableRow className="font-semibold bg-muted/50">
+              <TableCell>Рентабельность прибыли маркетплейсов</TableCell>
+              <TableCell className="text-right">
+                {totalRevenue > 0 ? ((wildberriesMarketplaceProfit + ozonMarketplaceProfit) / totalRevenue * 100).toFixed(1) + '%' : '0%'}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-8">Wildberries</TableCell>
+              <TableCell className="text-right">
+                {wildberriesRevenue > 0 ? (wildberriesMarketplaceProfit / wildberriesRevenue * 100).toFixed(1) + '%' : '0%'}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-8">Ozon</TableCell>
+              <TableCell className="text-right">
+                {ozonRevenue > 0 ? (ozonMarketplaceProfit / ozonRevenue * 100).toFixed(1) + '%' : '0%'}
+              </TableCell>
             </TableRow>
 
             <TableRow className="font-semibold bg-muted/50">
@@ -263,6 +344,26 @@ export const ProfitLossReport = ({ reportId, reportName, month, year, marketplac
               <TableCell className="text-right">-{taxes.toLocaleString()}</TableCell>
             </TableRow>
 
+            <TableRow>
+              <TableCell>Прочие платежи</TableCell>
+              <TableCell className="text-right">-{otherPayments.toLocaleString()}</TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Поступления от собственика</TableCell>
+              <TableCell className="text-right">{ownerContributions.toLocaleString()}</TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Продажа активов</TableCell>
+              <TableCell className="text-right">{getMarketplaceExpense('Прочее', 'Продажа активов').toLocaleString()}</TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Прочие поступления</TableCell>
+              <TableCell className="text-right">{getMarketplaceExpense('Прочее', 'Прочие поступления').toLocaleString()}</TableCell>
+            </TableRow>
+
             <TableRow className="font-semibold bg-primary/10">
               <TableCell>Чистая прибыль</TableCell>
               <TableCell className="text-right font-bold">{netProfit.toLocaleString()}</TableCell>
@@ -273,6 +374,16 @@ export const ProfitLossReport = ({ reportId, reportName, month, year, marketplac
               <TableCell className="text-right">
                 {totalRevenue > 0 ? (netProfit / totalRevenue * 100).toFixed(1) + '%' : '0%'}
               </TableCell>
+            </TableRow>
+
+            <TableRow className="font-semibold bg-muted/50">
+              <TableCell>Дивиденды из чистой прибыли</TableCell>
+              <TableCell className="text-right">{getMarketplaceExpense('Прочее', 'Дивиденды').toLocaleString()}</TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell className="pl-8">Дивиденды</TableCell>
+              <TableCell className="text-right">{getMarketplaceExpense('Прочее', 'Дивиденды').toLocaleString()}</TableCell>
             </TableRow>
           </TableBody>
         </Table>
