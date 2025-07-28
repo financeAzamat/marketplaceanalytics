@@ -172,12 +172,13 @@ export const ProfitLossReport = ({ reportId, reportName, dateFrom, dateTo, marke
   const renderRow = (item: any, level: number = 0) => {
     const paddingClass = level === 0 ? '' : level === 1 ? 'pl-4' : 'pl-8';
     const rowClass = item.type === 'header' ? 'font-semibold bg-muted/50' : item.type === 'subheader' ? 'font-medium' : '';
+    const cellClass = level === 0 ? 'sticky left-0 bg-background' : level === 1 ? 'sticky left-0 bg-muted/30' : 'sticky left-0 bg-background';
 
     return (
       <TableRow key={item.title} className={rowClass}>
-        <TableCell className={paddingClass}>{item.title}</TableCell>
+        <TableCell className={`${paddingClass} ${cellClass} min-w-[300px] border-r`}>{item.title}</TableCell>
         {periodsToShow.map((period, index) => (
-          <TableCell key={index} className="text-right">
+          <TableCell key={index} className="text-right min-w-[150px]">
             {item.getValue ? item.getValue(period.name).toLocaleString() : ''}
           </TableCell>
         ))}
@@ -194,17 +195,18 @@ export const ProfitLossReport = ({ reportId, reportName, dateFrom, dateTo, marke
         </p>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[300px]">Наименование статьи</TableHead>
-              {periodsToShow.map((period, index) => (
-                <TableHead key={index} className="text-right min-w-[120px]">
-                  {period.name}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[300px] sticky left-0 bg-background">Наименование статьи</TableHead>
+                {periodsToShow.map((period, index) => (
+                  <TableHead key={index} className="text-right min-w-[150px]">
+                    {period.name}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
           <TableBody>
             {reportStructure.map(section => (
               <>
@@ -217,8 +219,9 @@ export const ProfitLossReport = ({ reportId, reportName, dateFrom, dateTo, marke
                 ))}
               </>
             ))}
-          </TableBody>
-        </Table>
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
