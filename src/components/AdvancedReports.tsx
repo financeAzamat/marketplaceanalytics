@@ -75,18 +75,27 @@ export const AdvancedReports = () => {
         case 'week':
           periodStart = startOfWeek(current, { weekStartsOn: 1 });
           periodEnd = endOfWeek(current, { weekStartsOn: 1 });
+          // Ограничиваем период выбранными датами
+          if (periodStart < dateFrom) periodStart = new Date(dateFrom);
+          if (periodEnd > dateTo) periodEnd = new Date(dateTo);
           periodName = `Неделя ${format(periodStart, 'dd.MM')} - ${format(periodEnd, 'dd.MM.yyyy')}`;
           current = addWeeks(current, 1);
           break;
         case 'month':
           periodStart = startOfMonth(current);
           periodEnd = endOfMonth(current);
+          // Ограничиваем период выбранными датами
+          if (periodStart < dateFrom) periodStart = new Date(dateFrom);
+          if (periodEnd > dateTo) periodEnd = new Date(dateTo);
           periodName = format(current, 'LLLL yyyy', { locale: ru });
           current = addMonths(current, 1);
           break;
         case 'year':
           periodStart = startOfYear(current);
           periodEnd = endOfYear(current);
+          // Ограничиваем период выбранными датами
+          if (periodStart < dateFrom) periodStart = new Date(dateFrom);
+          if (periodEnd > dateTo) periodEnd = new Date(dateTo);
           periodName = format(current, 'yyyy');
           current = addYears(current, 1);
           break;
