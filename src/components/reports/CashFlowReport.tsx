@@ -7,9 +7,14 @@ import { Loader2 } from 'lucide-react';
 interface CashFlowReportProps {
   reportId: string;
   reportName: string;
-  month: number;
-  year: number;
+  dateFrom: Date;
+  dateTo: Date;
   marketplace: string;
+  periods: Array<{
+    name: string;
+    dateFrom: Date;
+    dateTo: Date;
+  }>;
 }
 
 interface CashFlowData {
@@ -20,16 +25,16 @@ interface CashFlowData {
   financialExpenses: number;
 }
 
-export const CashFlowReport = ({ reportId, reportName, month, year, marketplace }: CashFlowReportProps) => {
+export const CashFlowReport = ({ reportId, reportName, dateFrom, dateTo, marketplace, periods }: CashFlowReportProps) => {
   const { data: cashFlowData, isLoading } = useQuery({
-    queryKey: ['cashflow-report', reportId, month, year, marketplace],
+    queryKey: ['cashflow-report', reportId, dateFrom, dateTo, marketplace],
     queryFn: async () => {
       // Получаем данные по доходам (payment_journal)
       const { data: payments, error: paymentsError } = await supabase
         .from('payment_journal')
         .select('*')
-        .gte('payment_date', `${year}-${String(month).padStart(2, '0')}-01`)
-        .lt('payment_date', `${year}-${String(month + 1).padStart(2, '0')}-01`)
+        .gte('payment_date', dateFrom.toISOString().split('T')[0])
+        .lte('payment_date', dateTo.toISOString().split('T')[0])
         .eq(marketplace !== 'all' ? 'marketplace' : 'id', marketplace !== 'all' ? marketplace : reportId);
 
       if (paymentsError) throw paymentsError;
@@ -38,8 +43,8 @@ export const CashFlowReport = ({ reportId, reportName, month, year, marketplace 
       const { data: expenses, error: expensesError } = await supabase
         .from('expense_journal')
         .select('*')
-        .gte('expense_date', `${year}-${String(month).padStart(2, '0')}-01`)
-        .lt('expense_date', `${year}-${String(month + 1).padStart(2, '0')}-01`)
+        .gte('expense_date', dateFrom.toISOString().split('T')[0])
+        .lte('expense_date', dateTo.toISOString().split('T')[0])
         .eq(marketplace !== 'all' ? 'marketplace' : 'id', marketplace !== 'all' ? marketplace : reportId);
 
       if (expensesError) throw expensesError;

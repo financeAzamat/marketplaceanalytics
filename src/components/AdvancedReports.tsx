@@ -3,26 +3,36 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   FileText, 
   Download, 
   BarChart3,
   Loader2,
-  Eye
+  Eye,
+  CalendarIcon
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, addDays, addWeeks, addMonths, addYears, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CashFlowReport } from './reports/CashFlowReport';
 import { ProfitLossReport } from './reports/ProfitLossReport';
+import { cn } from '@/lib/utils';
 
 interface ReportConfig {
   reportType: 'dds' | 'piu';
   marketplace: 'wildberries' | 'ozon' | 'all';
-  month: number;
-  year: number;
+  dateFrom: Date;
+  dateTo: Date;
+  periodType: 'week' | 'month' | 'year';
+  periods: Array<{
+    name: string;
+    dateFrom: Date;
+    dateTo: Date;
+  }>;
 }
 
 export const AdvancedReports = () => {
@@ -33,8 +43,10 @@ export const AdvancedReports = () => {
   const [reportConfig, setReportConfig] = useState<ReportConfig>({
     reportType: 'dds',
     marketplace: 'all',
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
+    dateFrom: new Date(),
+    dateTo: new Date(),
+    periodType: 'month',
+    periods: []
   });
 
   const { data: reports, isLoading } = useQuery({
@@ -50,14 +62,52 @@ export const AdvancedReports = () => {
     },
   });
 
+  const generatePeriods = (dateFrom: Date, dateTo: Date, periodType: 'week' | 'month' | 'year') => {
+    const periods = [];
+    let current = new Date(dateFrom);
+    
+    while (current <= dateTo) {
+      let periodStart: Date;
+      let periodEnd: Date;
+      let periodName: string;
+      
+      switch (periodType) {
+        case 'week':
+          periodStart = startOfWeek(current, { weekStartsOn: 1 });
+          periodEnd = endOfWeek(current, { weekStartsOn: 1 });
+          periodName = `Неделя ${format(periodStart, 'dd.MM')} - ${format(periodEnd, 'dd.MM.yyyy')}`;
+          current = addWeeks(current, 1);
+          break;
+        case 'month':
+          periodStart = startOfMonth(current);
+          periodEnd = endOfMonth(current);
+          periodName = format(current, 'LLLL yyyy', { locale: ru });
+          current = addMonths(current, 1);
+          break;
+        case 'year':
+          periodStart = startOfYear(current);
+          periodEnd = endOfYear(current);
+          periodName = format(current, 'yyyy');
+          current = addYears(current, 1);
+          break;
+      }
+      
+      periods.push({
+        name: periodName,
+        dateFrom: periodStart,
+        dateTo: periodEnd
+      });
+      
+      if (periodEnd >= dateTo) break;
+    }
+    
+    return periods;
+  };
+
   const generateReportMutation = useMutation({
     mutationFn: async (config: ReportConfig) => {
-      const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
-                         'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-      const reportName = `${getReportTypeName(config.reportType)} - ${config.marketplace === 'all' ? 'Все маркетплейсы' : config.marketplace} - ${monthNames[config.month - 1]} ${config.year}`;
-      
-      const dateFrom = new Date(config.year, config.month - 1, 1);
-      const dateTo = new Date(config.year, config.month, 0);
+      const periods = generatePeriods(config.dateFrom, config.dateTo, config.periodType);
+      const reportName = `${getReportTypeName(config.reportType)} - ${config.marketplace === 'all' ? 'Все маркетплейсы' : config.marketplace} - ${format(config.dateFrom, 'dd.MM.yyyy')} - ${format(config.dateTo, 'dd.MM.yyyy')}`;
       
       // Create report record
       const { data: report, error } = await supabase
@@ -66,8 +116,8 @@ export const AdvancedReports = () => {
           report_name: reportName,
           report_type: config.reportType,
           marketplace: config.marketplace,
-          date_from: dateFrom.toISOString().split('T')[0],
-          date_to: dateTo.toISOString().split('T')[0],
+          date_from: config.dateFrom.toISOString().split('T')[0],
+          date_to: config.dateTo.toISOString().split('T')[0],
           status: 'generating',
         })
         .select()
@@ -89,7 +139,7 @@ export const AdvancedReports = () => {
 
       if (updateError) throw updateError;
       
-      return report;
+      return { ...report, periods };
     },
     onSuccess: () => {
       toast({
@@ -193,7 +243,7 @@ export const AdvancedReports = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Тип отчета</label>
@@ -233,61 +283,103 @@ export const AdvancedReports = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Месяц</label>
+              <label className="text-sm font-medium">Тип периода</label>
               <Select
-                value={reportConfig.month.toString()}
-                onValueChange={(value) => 
-                  setReportConfig(prev => ({ ...prev, month: parseInt(value) }))
+                value={reportConfig.periodType}
+                onValueChange={(value: any) => 
+                  setReportConfig(prev => ({ ...prev, periodType: value }))
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Выберите месяц" />
+                  <SelectValue placeholder="Выберите тип периода" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Январь</SelectItem>
-                  <SelectItem value="2">Февраль</SelectItem>
-                  <SelectItem value="3">Март</SelectItem>
-                  <SelectItem value="4">Апрель</SelectItem>
-                  <SelectItem value="5">Май</SelectItem>
-                  <SelectItem value="6">Июнь</SelectItem>
-                  <SelectItem value="7">Июль</SelectItem>
-                  <SelectItem value="8">Август</SelectItem>
-                  <SelectItem value="9">Сентябрь</SelectItem>
-                  <SelectItem value="10">Октябрь</SelectItem>
-                  <SelectItem value="11">Ноябрь</SelectItem>
-                  <SelectItem value="12">Декабрь</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Год</label>
-              <Select
-                value={reportConfig.year.toString()}
-                onValueChange={(value) => 
-                  setReportConfig(prev => ({ ...prev, year: parseInt(value) }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите год" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => {
-                    const year = new Date().getFullYear() - 5 + i;
-                    return (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    );
-                  })}
+                  <SelectItem value="week">По неделям</SelectItem>
+                  <SelectItem value="month">По месяцам</SelectItem>
+                  <SelectItem value="year">По годам</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Дата начала</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !reportConfig.dateFrom && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {reportConfig.dateFrom ? format(reportConfig.dateFrom, "dd.MM.yyyy") : "Выберите дату"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={reportConfig.dateFrom}
+                    onSelect={(date) => date && setReportConfig(prev => ({ ...prev, dateFrom: date }))}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Дата окончания</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !reportConfig.dateTo && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {reportConfig.dateTo ? format(reportConfig.dateTo, "dd.MM.yyyy") : "Выберите дату"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={reportConfig.dateTo}
+                    onSelect={(date) => date && setReportConfig(prev => ({ ...prev, dateTo: date }))}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          {reportConfig.dateFrom && reportConfig.dateTo && reportConfig.dateFrom <= reportConfig.dateTo && (
+            <div className="mt-4 p-3 bg-muted rounded-lg">
+              <p className="text-sm font-medium mb-2">Предварительный просмотр периодов:</p>
+              <div className="text-sm text-muted-foreground">
+                {generatePeriods(reportConfig.dateFrom, reportConfig.dateTo, reportConfig.periodType)
+                  .slice(0, 3)
+                  .map((period, index) => (
+                    <div key={index}>{period.name}</div>
+                  ))}
+                {generatePeriods(reportConfig.dateFrom, reportConfig.dateTo, reportConfig.periodType).length > 3 && (
+                  <div>... и еще {generatePeriods(reportConfig.dateFrom, reportConfig.dateTo, reportConfig.periodType).length - 3} периодов</div>
+                )}
+              </div>
+            </div>
+          )}
+
           <Button 
-            onClick={() => generateReportMutation.mutate(reportConfig)}
-            disabled={generateReportMutation.isPending}
+            onClick={() => {
+              const periods = generatePeriods(reportConfig.dateFrom, reportConfig.dateTo, reportConfig.periodType);
+              generateReportMutation.mutate({ ...reportConfig, periods });
+            }}
+            disabled={generateReportMutation.isPending || !reportConfig.dateFrom || !reportConfig.dateTo || reportConfig.dateFrom > reportConfig.dateTo}
             className="w-full md:w-auto"
           >
             {generateReportMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -308,9 +400,10 @@ export const AdvancedReports = () => {
           <CashFlowReport 
             reportId={selectedReport.id}
             reportName={selectedReport.report_name}
-            month={new Date(selectedReport.date_from).getMonth() + 1}
-            year={new Date(selectedReport.date_from).getFullYear()}
+            dateFrom={new Date(selectedReport.date_from)}
+            dateTo={new Date(selectedReport.date_to)}
             marketplace={selectedReport.marketplace}
+            periods={selectedReport.periods || []}
           />
         </div>
       )}
@@ -326,9 +419,10 @@ export const AdvancedReports = () => {
           <ProfitLossReport 
             reportId={selectedReport.id}
             reportName={selectedReport.report_name}
-            month={new Date(selectedReport.date_from).getMonth() + 1}
-            year={new Date(selectedReport.date_from).getFullYear()}
+            dateFrom={new Date(selectedReport.date_from)}
+            dateTo={new Date(selectedReport.date_to)}
             marketplace={selectedReport.marketplace}
+            periods={selectedReport.periods || []}
           />
         </div>
       )}
