@@ -358,22 +358,6 @@ export const AdvancedReports = () => {
             </div>
           </div>
 
-          {reportConfig.dateFrom && reportConfig.dateTo && reportConfig.dateFrom <= reportConfig.dateTo && (
-            <div className="mt-4 p-3 bg-muted rounded-lg">
-              <p className="text-sm font-medium mb-2">Предварительный просмотр периодов:</p>
-              <div className="text-sm text-muted-foreground">
-                {generatePeriods(reportConfig.dateFrom, reportConfig.dateTo, reportConfig.periodType)
-                  .slice(0, 3)
-                  .map((period, index) => (
-                    <div key={index}>{period.name}</div>
-                  ))}
-                {generatePeriods(reportConfig.dateFrom, reportConfig.dateTo, reportConfig.periodType).length > 3 && (
-                  <div>... и еще {generatePeriods(reportConfig.dateFrom, reportConfig.dateTo, reportConfig.periodType).length - 3} периодов</div>
-                )}
-              </div>
-            </div>
-          )}
-
           <Button 
             onClick={() => {
               const periods = generatePeriods(reportConfig.dateFrom, reportConfig.dateTo, reportConfig.periodType);
@@ -403,7 +387,7 @@ export const AdvancedReports = () => {
             dateFrom={new Date(selectedReport.date_from)}
             dateTo={new Date(selectedReport.date_to)}
             marketplace={selectedReport.marketplace}
-            periods={selectedReport.periods || []}
+            periods={generatePeriods(new Date(selectedReport.date_from), new Date(selectedReport.date_to), 'month')}
           />
         </div>
       )}
@@ -422,7 +406,7 @@ export const AdvancedReports = () => {
             dateFrom={new Date(selectedReport.date_from)}
             dateTo={new Date(selectedReport.date_to)}
             marketplace={selectedReport.marketplace}
-            periods={selectedReport.periods || []}
+            periods={generatePeriods(new Date(selectedReport.date_from), new Date(selectedReport.date_to), 'month')}
           />
         </div>
       )}
