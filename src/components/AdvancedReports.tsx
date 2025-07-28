@@ -118,6 +118,7 @@ export const AdvancedReports = () => {
           marketplace: config.marketplace,
           date_from: config.dateFrom.toISOString().split('T')[0],
           date_to: config.dateTo.toISOString().split('T')[0],
+          period_type: config.periodType,
           status: 'generating',
         })
         .select()
@@ -387,7 +388,7 @@ export const AdvancedReports = () => {
             dateFrom={new Date(selectedReport.date_from)}
             dateTo={new Date(selectedReport.date_to)}
             marketplace={selectedReport.marketplace}
-            periods={generatePeriods(new Date(selectedReport.date_from), new Date(selectedReport.date_to), 'month')}
+            periods={generatePeriods(new Date(selectedReport.date_from), new Date(selectedReport.date_to), selectedReport.period_type || 'month')}
           />
         </div>
       )}
@@ -406,7 +407,7 @@ export const AdvancedReports = () => {
             dateFrom={new Date(selectedReport.date_from)}
             dateTo={new Date(selectedReport.date_to)}
             marketplace={selectedReport.marketplace}
-            periods={generatePeriods(new Date(selectedReport.date_from), new Date(selectedReport.date_to), 'month')}
+            periods={generatePeriods(new Date(selectedReport.date_from), new Date(selectedReport.date_to), selectedReport.period_type || 'month')}
           />
         </div>
       )}

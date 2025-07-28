@@ -190,6 +190,7 @@ export type Database = {
           file_url: string | null
           id: string
           marketplace: string | null
+          period_type: string | null
           report_name: string
           report_type: string
           status: string
@@ -201,6 +202,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           marketplace?: string | null
+          period_type?: string | null
           report_name: string
           report_type: string
           status?: string
@@ -212,6 +214,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           marketplace?: string | null
+          period_type?: string | null
           report_name?: string
           report_type?: string
           status?: string
