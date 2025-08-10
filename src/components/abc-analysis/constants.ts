@@ -20,4 +20,4 @@ export const categoryColors = {
   C: '#ef4444', // red
 };
 
-export const MARKETPLACES = ['WB', 'OZON'];
+export const MARKETPLACES = ['wildberries', 'ozon'];

@@ -31,9 +31,9 @@ export const ABCFilters = ({
 
   const getMarketplaceName = (code: string) => {
     switch (code) {
-      case 'WB':
+      case 'wildberries':
         return 'Wildberries';
-      case 'OZON':
+      case 'ozon':
         return 'Ozon';
       default:
         return code;

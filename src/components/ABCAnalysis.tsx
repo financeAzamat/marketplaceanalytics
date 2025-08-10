@@ -11,7 +11,7 @@ import { EmptyStateCard } from './abc-analysis/EmptyStateCard';
 
 export const ABCAnalysis = () => {
   const [analysisType, setAnalysisType] = useState<'sales_volume' | 'revenue' | 'profit'>('revenue');
-  const [marketplaceFilter, setMarketplaceFilter] = useState<string[]>(['WB', 'OZON']);
+  const [marketplaceFilter, setMarketplaceFilter] = useState<string[]>(['wildberries', 'ozon']);
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined
