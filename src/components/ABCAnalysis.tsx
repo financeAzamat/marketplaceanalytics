@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Package, DollarSign, TrendingUp, Loader2 } from 'lucide-react';
+import { Loader2, Download } from 'lucide-react';
 import { useABCAnalysis } from '@/hooks/useABCAnalysis';
-import { MarketplaceFilter } from './abc-analysis/MarketplaceFilter';
-import { CategorySummaryCards } from './abc-analysis/CategorySummaryCards';
-import { ABCCharts } from './abc-analysis/ABCCharts';
-import { ABCDataTable } from './abc-analysis/ABCDataTable';
+import { ABCFilters } from './abc-analysis/ABCFilters';
+import { ABCKeyMetrics } from './abc-analysis/ABCKeyMetrics';
+import { ABCParetoChart } from './abc-analysis/ABCParetoChart';
+import { ABCExpandableTable } from './abc-analysis/ABCExpandableTable';
+import { ABCDynamicSplit } from './abc-analysis/ABCDynamicSplit';
 import { EmptyStateCard } from './abc-analysis/EmptyStateCard';
 
 export const ABCAnalysis = () => {
   const [analysisType, setAnalysisType] = useState<'sales_volume' | 'revenue' | 'profit'>('revenue');
-  const [marketplaceFilter, setMarketplaceFilter] = useState<string[]>(['wildberries', 'ozon']);
+  const [marketplaceFilter, setMarketplaceFilter] = useState<string[]>(['WB', 'OZON']);
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined
+  });
   
   const { abcItems, categorySummary, totals, isLoading } = useABCAnalysis(analysisType, marketplaceFilter);
 
@@ -21,6 +25,11 @@ export const ABCAnalysis = () => {
         ? prev.filter(m => m !== marketplace)
         : [...prev, marketplace]
     );
+  };
+
+  const handleExport = () => {
+    // TODO: Implement export functionality
+    console.log('Exporting ABC analysis...');
   };
 
   if (isLoading) {
@@ -37,8 +46,8 @@ export const ABCAnalysis = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">ABC Анализ</h2>
-            <p className="text-gray-600">Категоризация записей продаж по объемам продаж, выручке и прибыли</p>
+            <h2 className="text-2xl font-bold">ABC Анализ</h2>
+            <p className="text-muted-foreground">Категоризация записей продаж по объемам продаж, выручке и прибыли</p>
           </div>
         </div>
         <EmptyStateCard />
@@ -48,55 +57,64 @@ export const ABCAnalysis = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">ABC Анализ</h2>
-          <p className="text-gray-600">Категоризация записей продаж по объемам продаж, выручке и прибыли</p>
+          <h2 className="text-2xl font-bold">ABC Анализ</h2>
+          <p className="text-muted-foreground">Категоризация записей продаж по объемам продаж, выручке и прибыли</p>
         </div>
-        <Button>
-          Экспорт анализа
+        <Button onClick={handleExport} className="flex items-center space-x-2">
+          <Download className="h-4 w-4" />
+          <span>Экспорт анализа</span>
         </Button>
       </div>
 
-      <MarketplaceFilter 
-        marketplaceFilter={marketplaceFilter}
-        onMarketplaceToggle={handleMarketplaceToggle}
+      {/* Key Metrics */}
+      <ABCKeyMetrics 
+        categorySummary={categorySummary}
+        analysisType={analysisType}
+        totals={totals}
       />
 
-      <Tabs value={analysisType} onValueChange={(value) => setAnalysisType(value as typeof analysisType)}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="sales_volume" className="flex items-center space-x-2">
-            <Package className="h-4 w-4" />
-            <span>По объему продаж</span>
-          </TabsTrigger>
-          <TabsTrigger value="revenue" className="flex items-center space-x-2">
-            <DollarSign className="h-4 w-4" />
-            <span>По выручке</span>
-          </TabsTrigger>
-          <TabsTrigger value="profit" className="flex items-center space-x-2">
-            <TrendingUp className="h-4 w-4" />
-            <span>По прибыли</span>
-          </TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Sidebar - Filters */}
+        <div className="lg:col-span-1">
+          <ABCFilters
+            marketplaceFilter={marketplaceFilter}
+            onMarketplaceToggle={handleMarketplaceToggle}
+            analysisType={analysisType}
+            onAnalysisTypeChange={setAnalysisType}
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+          />
+        </div>
 
-        <TabsContent value={analysisType} className="space-y-6">
-          <CategorySummaryCards 
-            categorySummary={categorySummary}
-            analysisType={analysisType}
-          />
-          
-          <ABCCharts 
-            categorySummary={categorySummary}
+        {/* Main Content */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Pareto Chart */}
+          <ABCParetoChart 
             abcItems={abcItems}
             analysisType={analysisType}
           />
-          
-          <ABCDataTable 
+
+          {/* Expandable Table */}
+          <ABCExpandableTable 
             abcItems={abcItems}
-            totals={totals}
+            analysisType={analysisType}
           />
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
+
+      {/* Right Sidebar - Dynamic Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3"></div>
+        <div className="lg:col-span-1">
+          <ABCDynamicSplit 
+            abcItems={abcItems}
+            analysisType={analysisType}
+          />
+        </div>
+      </div>
     </div>
   );
 };
