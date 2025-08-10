@@ -69,6 +69,22 @@ export const ABCAnalysis = () => {
         </Button>
       </div>
 
+      {/* Dynamic Split Controls */}
+      <ABCDynamicSplit 
+        abcItems={abcItems}
+        analysisType={analysisType}
+      />
+
+      {/* Filters */}
+      <ABCFilters
+        marketplaceFilter={marketplaceFilter}
+        onMarketplaceToggle={handleMarketplaceToggle}
+        analysisType={analysisType}
+        onAnalysisTypeChange={setAnalysisType}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+      />
+
       {/* Key Metrics */}
       <ABCKeyMetrics 
         categorySummary={categorySummary}
@@ -76,35 +92,17 @@ export const ABCAnalysis = () => {
         totals={totals}
       />
 
-      {/* Dynamic Split Controls */}
-      <ABCDynamicSplit 
+      {/* Pareto Chart */}
+      <ABCParetoChart 
         abcItems={abcItems}
         analysisType={analysisType}
       />
 
-      <div className="space-y-6">
-        {/* Filters above Pareto chart */}
-        <ABCFilters
-          marketplaceFilter={marketplaceFilter}
-          onMarketplaceToggle={handleMarketplaceToggle}
-          analysisType={analysisType}
-          onAnalysisTypeChange={setAnalysisType}
-          dateRange={dateRange}
-          onDateRangeChange={setDateRange}
-        />
-
-        {/* Pareto Chart */}
-        <ABCParetoChart 
-          abcItems={abcItems}
-          analysisType={analysisType}
-        />
-
-        {/* Expandable Table */}
-        <ABCExpandableTable 
-          abcItems={abcItems}
-          analysisType={analysisType}
-        />
-      </div>
+      {/* Expandable Table */}
+      <ABCExpandableTable 
+        abcItems={abcItems}
+        analysisType={analysisType}
+      />
     </div>
   );
 };
