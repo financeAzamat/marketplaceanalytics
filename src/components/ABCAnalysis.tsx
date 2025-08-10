@@ -76,6 +76,12 @@ export const ABCAnalysis = () => {
         totals={totals}
       />
 
+      {/* Dynamic Split Controls */}
+      <ABCDynamicSplit 
+        abcItems={abcItems}
+        analysisType={analysisType}
+      />
+
       <div className="space-y-6">
         {/* Filters above Pareto chart */}
         <ABCFilters
@@ -95,12 +101,6 @@ export const ABCAnalysis = () => {
 
         {/* Expandable Table */}
         <ABCExpandableTable 
-          abcItems={abcItems}
-          analysisType={analysisType}
-        />
-
-        {/* Dynamic Split */}
-        <ABCDynamicSplit 
           abcItems={abcItems}
           analysisType={analysisType}
         />

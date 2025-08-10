@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Info, Lightbulb } from 'lucide-react';
 import { ABCItem } from '@/hooks/useABCAnalysis';
 import { categoryColors } from './constants';
@@ -82,25 +83,31 @@ export const ABCDynamicSplit = ({ abcItems, analysisType, onSplitChange }: ABCDy
   ];
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Settings className="h-5 w-5" />
-              <span>Управление анализом</span>
-            </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  Динамическое разделение
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Настройка границ категорий</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6">
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Settings className="h-5 w-5" />
+            <span>Управление анализом</span>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                Динамическое разделение
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Настройка границ категорий и рекомендации</DialogTitle>
+              </DialogHeader>
+              
+              <Tabs defaultValue="settings" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="settings">Настройки</TabsTrigger>
+                  <TabsTrigger value="recommendations">Рекомендации</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="settings" className="space-y-6">
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium mb-2 block">
@@ -163,51 +170,51 @@ export const ABCDynamicSplit = ({ abcItems, analysisType, onSplitChange }: ABCDy
                       Применить
                     </Button>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </CardTitle>
-        </CardHeader>
-      </Card>
+                </TabsContent>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Lightbulb className="h-5 w-5" />
-            <span>Рекомендации по управлению</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recommendations.map((rec) => (
-              <div key={rec.category} className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Badge 
-                    variant="outline"
-                    style={{ 
-                      backgroundColor: categoryColors[rec.category as keyof typeof categoryColors] + '20',
-                      borderColor: categoryColors[rec.category as keyof typeof categoryColors],
-                      color: categoryColors[rec.category as keyof typeof categoryColors]
-                    }}
-                  >
-                    {rec.title}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">{rec.description}</p>
-                <ul className="text-sm space-y-1 ml-4">
-                  {rec.suggestions.map((suggestion, index) => (
-                    <li key={index} className="flex items-center space-x-2">
-                      <div className="w-1 h-1 bg-current rounded-full" />
-                      <span>{suggestion}</span>
-                    </li>
+                <TabsContent value="recommendations" className="space-y-4">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Lightbulb className="h-5 w-5" />
+                    <span className="font-medium">Рекомендации по управлению</span>
+                  </div>
+                  
+                  {recommendations.map((rec) => (
+                    <div key={rec.category} className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Badge 
+                          variant="outline"
+                          style={{ 
+                            backgroundColor: categoryColors[rec.category as keyof typeof categoryColors] + '20',
+                            borderColor: categoryColors[rec.category as keyof typeof categoryColors],
+                            color: categoryColors[rec.category as keyof typeof categoryColors]
+                          }}
+                        >
+                          {rec.title}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{rec.description}</p>
+                      <ul className="text-sm space-y-1 ml-4">
+                        {rec.suggestions.map((suggestion, index) => (
+                          <li key={index} className="flex items-center space-x-2">
+                            <div className="w-1 h-1 bg-current rounded-full" />
+                            <span>{suggestion}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      {rec.category !== 'C' && <Separator className="mt-4" />}
+                    </div>
                   ))}
-                </ul>
-                {rec.category !== 'C' && <Separator className="mt-4" />}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+                </TabsContent>
+              </Tabs>
+            </DialogContent>
+          </Dialog>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">
+          Настройте границы категорий ABC анализа и получите рекомендации по управлению товарными запасами
+        </p>
+      </CardContent>
+    </Card>
   );
 };
