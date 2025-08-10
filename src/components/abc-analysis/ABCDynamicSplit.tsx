@@ -170,21 +170,29 @@ export const ABCDynamicSplit = ({ abcItems, analysisType, onSplitChange }: ABCDy
                 </div>
 
                 {/* Recommendations Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Lightbulb className="h-5 w-5" />
-                    <span className="font-medium">Рекомендации по управлению</span>
-                  </div>
+                <Collapsible 
+                  open={expandedRecommendations.has('recommendations')}
+                  onOpenChange={() => toggleRecommendation('recommendations')}
+                >
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                      <div className="flex items-center space-x-2">
+                        <Lightbulb className="h-5 w-5" />
+                        <span className="font-medium">Рекомендации по управлению</span>
+                      </div>
+                      {expandedRecommendations.has('recommendations') ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </div>
+                  </CollapsibleTrigger>
                   
-                  {recommendations.map((rec) => (
-                    <Collapsible 
-                      key={rec.category}
-                      open={expandedRecommendations.has(rec.category)}
-                      onOpenChange={() => toggleRecommendation(rec.category)}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <div className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                          <div className="flex items-center space-x-2">
+                  <CollapsibleContent className="px-3 pb-3">
+                    <div className="space-y-4 mt-2">
+                      {recommendations.map((rec) => (
+                        <div key={rec.category} className="p-3 border rounded-lg">
+                          <div className="flex items-center space-x-2 mb-2">
                             <Badge 
                               variant="outline"
                               style={{ 
@@ -196,17 +204,7 @@ export const ABCDynamicSplit = ({ abcItems, analysisType, onSplitChange }: ABCDy
                               {rec.title}
                             </Badge>
                           </div>
-                          {expandedRecommendations.has(rec.category) ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                        </div>
-                      </CollapsibleTrigger>
-                      
-                      <CollapsibleContent className="px-3 pb-3">
-                        <div className="space-y-2 mt-2">
-                          <p className="text-sm text-muted-foreground">{rec.description}</p>
+                          <p className="text-sm text-muted-foreground mb-2">{rec.description}</p>
                           <ul className="text-sm space-y-1 ml-4">
                             {rec.suggestions.map((suggestion, index) => (
                               <li key={index} className="flex items-center space-x-2">
@@ -216,10 +214,10 @@ export const ABCDynamicSplit = ({ abcItems, analysisType, onSplitChange }: ABCDy
                             ))}
                           </ul>
                         </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ))}
-                </div>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
 
                 {/* Action Buttons */}
                 <div className="flex justify-end space-x-2 pt-4 border-t">
