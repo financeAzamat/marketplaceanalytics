@@ -41,16 +41,11 @@ export const ABCFilters = ({
   };
 
   return (
-    <Card className="w-80">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Filter className="h-5 w-5" />
-          <span>Фильтры</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Период */}
-        <div className="space-y-2">
+    <Card>
+      <CardContent className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Период */}
+          <div className="space-y-2">
           <label className="text-sm font-medium">Период</label>
           <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
             <PopoverTrigger asChild>
@@ -92,12 +87,12 @@ export const ABCFilters = ({
               />
             </PopoverContent>
           </Popover>
-        </div>
+          </div>
 
-        {/* Маркетплейсы */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Маркетплейсы</label>
+          {/* Маркетплейсы */}
           <div className="space-y-2">
+            <label className="text-sm font-medium">Маркетплейсы</label>
+            <div className="flex flex-wrap gap-2">
             {MARKETPLACES.map(marketplace => (
               <div key={marketplace} className="flex items-center space-x-2">
                 <Checkbox
@@ -110,12 +105,12 @@ export const ABCFilters = ({
                 </label>
               </div>
             ))}
+            </div>
           </div>
-        </div>
 
-        {/* Метрика анализа */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Метрика анализа</label>
+          {/* Метрика анализа */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Метрика анализа</label>
           <Select value={analysisType} onValueChange={onAnalysisTypeChange}>
             <SelectTrigger>
               <SelectValue />
@@ -125,7 +120,8 @@ export const ABCFilters = ({
               <SelectItem value="sales_volume">Объем продаж</SelectItem>
               <SelectItem value="profit">Прибыль</SelectItem>
             </SelectContent>
-          </Select>
+            </Select>
+          </div>
         </div>
       </CardContent>
     </Card>

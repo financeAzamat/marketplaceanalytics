@@ -76,44 +76,34 @@ export const ABCAnalysis = () => {
         totals={totals}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Sidebar - Filters */}
-        <div className="lg:col-span-1">
-          <ABCFilters
-            marketplaceFilter={marketplaceFilter}
-            onMarketplaceToggle={handleMarketplaceToggle}
-            analysisType={analysisType}
-            onAnalysisTypeChange={setAnalysisType}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-          />
-        </div>
+      <div className="space-y-6">
+        {/* Filters above Pareto chart */}
+        <ABCFilters
+          marketplaceFilter={marketplaceFilter}
+          onMarketplaceToggle={handleMarketplaceToggle}
+          analysisType={analysisType}
+          onAnalysisTypeChange={setAnalysisType}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+        />
 
-        {/* Main Content */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Pareto Chart */}
-          <ABCParetoChart 
-            abcItems={abcItems}
-            analysisType={analysisType}
-          />
+        {/* Pareto Chart */}
+        <ABCParetoChart 
+          abcItems={abcItems}
+          analysisType={analysisType}
+        />
 
-          {/* Expandable Table */}
-          <ABCExpandableTable 
-            abcItems={abcItems}
-            analysisType={analysisType}
-          />
-        </div>
-      </div>
+        {/* Expandable Table */}
+        <ABCExpandableTable 
+          abcItems={abcItems}
+          analysisType={analysisType}
+        />
 
-      {/* Right Sidebar - Dynamic Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3"></div>
-        <div className="lg:col-span-1">
-          <ABCDynamicSplit 
-            abcItems={abcItems}
-            analysisType={analysisType}
-          />
-        </div>
+        {/* Dynamic Split */}
+        <ABCDynamicSplit 
+          abcItems={abcItems}
+          analysisType={analysisType}
+        />
       </div>
     </div>
   );

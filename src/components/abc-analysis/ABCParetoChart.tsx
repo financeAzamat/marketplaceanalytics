@@ -37,7 +37,7 @@ export const ABCParetoChart = ({ abcItems, analysisType }: ABCParetoChartProps) 
   };
 
   return (
-    <Card className="col-span-2">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <TrendingUp className="h-5 w-5" />
