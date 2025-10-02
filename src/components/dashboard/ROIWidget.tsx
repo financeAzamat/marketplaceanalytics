@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target } from "lucide-react";
+import { Target, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ROIWidgetProps {
   roi: number;
@@ -16,6 +17,16 @@ export const ROIWidget = ({ roi, adSpending, isLoading }: ROIWidgetProps) => {
         <CardTitle className="flex items-center space-x-2">
           <Target className="h-5 w-5" />
           <span>ROI рекламы</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 cursor-help text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">((Выручка - Себестоимость - Комиссии) / Расходы на рекламу) × 100%</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardTitle>
       </CardHeader>
       <CardContent>

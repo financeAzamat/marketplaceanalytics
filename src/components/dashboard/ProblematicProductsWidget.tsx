@@ -22,7 +22,7 @@ export const ProblematicProductsWidget = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
           <span>Проблемные товары</span>
           <TooltipProvider>
             <Tooltip>
