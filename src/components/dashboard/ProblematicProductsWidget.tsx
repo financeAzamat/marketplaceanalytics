@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Calendar } from "lucide-react";
+import { AlertCircle, Calendar, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ProblematicProduct {
   product_name: string;
@@ -21,9 +22,21 @@ export const ProblematicProductsWidget = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <AlertCircle className="h-5 w-5" />
-          <span>Проблемные товары</span>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="h-5 w-5" />
+            <span>Проблемные товары</span>
+          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 cursor-help text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Товары с оборотом более 120 дней</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -35,9 +48,6 @@ export const ProblematicProductsWidget = ({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="text-sm text-muted-foreground mb-2">
-              Товары с оборотом более 120 дней
-            </div>
             {problematicProducts.map((product, index) => (
               <div key={index} className="flex items-start justify-between p-3 border rounded-lg border-destructive/30">
                 <div className="flex-1">
