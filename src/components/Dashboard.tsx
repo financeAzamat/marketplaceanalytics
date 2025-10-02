@@ -8,8 +8,15 @@ import { useSalesData } from '@/hooks/useSalesData';
 import { useCostData } from '@/hooks/useCostData';
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections';
 import { useDataSync } from '@/hooks/useDataSync';
+import { useProductSales } from '@/hooks/useProductSales';
+import { useExpenseJournal } from '@/hooks/useExpenseJournal';
 import { MarketplaceConnection } from './MarketplaceConnection';
 import { DashboardFilters } from './DashboardFilters';
+import { TopProductsWidget } from './dashboard/TopProductsWidget';
+import { MarginWidget } from './dashboard/MarginWidget';
+import { UnprofitableAlert } from './dashboard/UnprofitableAlert';
+import { ROIWidget } from './dashboard/ROIWidget';
+import { ProblematicProductsWidget } from './dashboard/ProblematicProductsWidget';
 
 export const Dashboard = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
@@ -24,12 +31,69 @@ export const Dashboard = () => {
   const { costs, isLoading: costLoading } = useCostData();
   const { getConnectionStatus } = useMarketplaceConnections();
   const { syncAllMarketplaces } = useDataSync();
+  const { productSales, isLoading: productSalesLoading } = useProductSales(
+    dateFrom?.toISOString().split('T')[0],
+    dateTo?.toISOString().split('T')[0],
+    marketplace
+  );
+  const { expenses } = useExpenseJournal();
 
   // Calculate metrics from real data
   const totalRevenue = salesData.reduce((sum, item) => sum + Number(item.revenue), 0);
   const totalProfit = salesData.reduce((sum, item) => sum + Number(item.profit), 0);
   const totalOrders = salesData.reduce((sum, item) => sum + item.orders_count, 0);
   const totalCosts = costs.reduce((sum, item) => sum + Number(item.total_amount), 0);
+
+  // Calculate widget data
+  const productSalesMap = new Map<string, { revenue: number; profit: number; cogs: number; marketplace: string }>();
+  productSales.forEach((sale) => {
+    const key = sale.product_name;
+    const existing = productSalesMap.get(key) || { revenue: 0, profit: 0, cogs: 0, marketplace: sale.marketplace };
+    existing.revenue += Number(sale.revenue);
+    existing.profit += Number(sale.profit);
+    existing.cogs += Number(sale.cogs);
+    productSalesMap.set(key, existing);
+  });
+
+  const topProducts = Array.from(productSalesMap.entries())
+    .map(([product_name, data]) => ({
+      product_name,
+      total_revenue: data.revenue,
+      total_profit: data.profit,
+      marketplace: data.marketplace,
+    }))
+    .sort((a, b) => b.total_revenue - a.total_revenue)
+    .slice(0, 5);
+
+  const totalProductRevenue = productSales.reduce((sum, item) => sum + Number(item.revenue), 0);
+  const totalProductProfit = productSales.reduce((sum, item) => sum + Number(item.profit), 0);
+  const totalProductCOGS = productSales.reduce((sum, item) => sum + Number(item.cogs), 0);
+
+  const averageMargin = totalProductRevenue > 0 ? (totalProductProfit / totalProductRevenue) * 100 : 0;
+  const averageMarkup = totalProductCOGS > 0 ? (totalProductProfit / totalProductCOGS) * 100 : 0;
+
+  const unprofitableProducts = productSales.filter(p => Number(p.profit) < 0);
+  const unprofitablePercentage = productSales.length > 0 ? (unprofitableProducts.length / productSales.length) * 100 : 0;
+
+  const adSpending = expenses
+    .filter(e => e.category?.toLowerCase().includes('реклам'))
+    .reduce((sum, item) => sum + Number(item.amount), 0);
+
+  const totalCommissions = productSales.reduce((sum, item) => sum + Number(item.commission), 0);
+  const roi = adSpending > 0 
+    ? ((totalProductRevenue - totalProductCOGS - totalCommissions) / adSpending) * 100 
+    : 0;
+
+  const problematicProducts = productSales
+    .filter(p => p.days_since_last_sale && p.days_since_last_sale > 120)
+    .map(p => ({
+      product_name: p.product_name,
+      marketplace: p.marketplace,
+      days_since_last_sale: p.days_since_last_sale!,
+      last_sale_date: p.last_sale_date!,
+    }))
+    .sort((a, b) => b.days_since_last_sale - a.days_since_last_sale)
+    .slice(0, 5);
 
   // Prepare chart data
   const revenueData = salesData.slice(0, 7).reverse().map(item => ({
@@ -150,6 +214,30 @@ export const Dashboard = () => {
             <p className="text-xs opacity-75 mt-1">Загружено файлов: {costs.length}</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* New Widgets */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <TopProductsWidget topProducts={topProducts} isLoading={productSalesLoading} />
+        <MarginWidget 
+          averageMargin={averageMargin} 
+          averageMarkup={averageMarkup} 
+          isLoading={productSalesLoading} 
+        />
+        <UnprofitableAlert 
+          unprofitablePercentage={unprofitablePercentage}
+          unprofitableCount={unprofitableProducts.length}
+          totalCount={productSales.length}
+          isLoading={productSalesLoading}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ROIWidget roi={roi} adSpending={adSpending} isLoading={productSalesLoading} />
+        <ProblematicProductsWidget 
+          problematicProducts={problematicProducts}
+          isLoading={productSalesLoading}
+        />
       </div>
 
       {/* Charts */}

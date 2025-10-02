@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -178,6 +178,63 @@ export type Database = {
           invoice_number?: string | null
           marketplace?: string | null
           payment_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_sales: {
+        Row: {
+          cogs: number
+          commission: number
+          created_at: string
+          days_since_last_sale: number | null
+          id: string
+          last_sale_date: string | null
+          marketplace: string
+          marketplace_article: string | null
+          product_name: string
+          profit: number
+          quantity: number
+          revenue: number
+          sale_date: string
+          subject: string | null
+          supplier_article: string | null
+          updated_at: string
+        }
+        Insert: {
+          cogs?: number
+          commission?: number
+          created_at?: string
+          days_since_last_sale?: number | null
+          id?: string
+          last_sale_date?: string | null
+          marketplace: string
+          marketplace_article?: string | null
+          product_name: string
+          profit?: number
+          quantity?: number
+          revenue?: number
+          sale_date: string
+          subject?: string | null
+          supplier_article?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cogs?: number
+          commission?: number
+          created_at?: string
+          days_since_last_sale?: number | null
+          id?: string
+          last_sale_date?: string | null
+          marketplace?: string
+          marketplace_article?: string | null
+          product_name?: string
+          profit?: number
+          quantity?: number
+          revenue?: number
+          sale_date?: string
+          subject?: string | null
+          supplier_article?: string | null
           updated_at?: string
         }
         Relationships: []

@@ -1,0 +1,49 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Target } from "lucide-react";
+
+interface ROIWidgetProps {
+  roi: number;
+  adSpending: number;
+  isLoading: boolean;
+}
+
+export const ROIWidget = ({ roi, adSpending, isLoading }: ROIWidgetProps) => {
+  const isPositive = roi > 0;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center space-x-2">
+          <Target className="h-5 w-5" />
+          <span>ROI рекламы</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="text-center text-muted-foreground">Загрузка...</div>
+        ) : (
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className={`text-4xl font-bold ${isPositive ? 'text-green-600' : 'text-destructive'}`}>
+                {roi.toFixed(1)}%
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">
+                Окупаемость рекламных расходов
+              </div>
+            </div>
+            
+            <div className="p-3 border rounded-lg bg-muted/30">
+              <div className="text-xs text-muted-foreground mb-2">Формула расчета:</div>
+              <div className="text-xs font-mono">
+                ROI = ((Выручка - Себестоимость - Комиссии) / Расходы на рекламу) × 100%
+              </div>
+              <div className="text-xs text-muted-foreground mt-2">
+                Расходы на рекламу: {adSpending.toLocaleString('ru-RU')} ₽
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
