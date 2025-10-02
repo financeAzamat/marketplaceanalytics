@@ -23,14 +23,13 @@ export const ProblematicProductsWidget = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="h-5 w-5" />
-            <span>Проблемные товары</span>
-          </div>
+          <span>Проблемные товары</span>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Info className="h-4 w-4 cursor-help text-muted-foreground" />
+                <div className="p-1 rounded-full hover:bg-muted transition-colors">
+                  <Info className="h-5 w-5 cursor-help text-primary" />
+                </div>
               </TooltipTrigger>
               <TooltipContent>
                 <p className="text-xs">Товары с оборотом более 120 дней</p>
