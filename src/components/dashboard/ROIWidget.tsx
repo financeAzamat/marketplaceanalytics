@@ -20,7 +20,9 @@ export const ROIWidget = ({ roi, adSpending, isLoading }: ROIWidgetProps) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Info className="h-4 w-4 cursor-help text-muted-foreground" />
+                <div className="p-1 rounded-full hover:bg-muted transition-colors">
+                  <Info className="h-5 w-5 cursor-help text-primary" />
+                </div>
               </TooltipTrigger>
               <TooltipContent>
                 <p className="text-xs">((Выручка - Себестоимость - Комиссии) / Расходы на рекламу) × 100%</p>
