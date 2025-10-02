@@ -31,16 +31,6 @@ export const ROIWidget = ({ roi, adSpending, isLoading }: ROIWidgetProps) => {
                 Окупаемость рекламных расходов
               </div>
             </div>
-            
-            <div className="p-3 border rounded-lg bg-muted/30">
-              <div className="text-xs text-muted-foreground mb-2">Формула расчета:</div>
-              <div className="text-xs font-mono">
-                ROI = ((Выручка - Себестоимость - Комиссии) / Расходы на рекламу) × 100%
-              </div>
-              <div className="text-xs text-muted-foreground mt-2">
-                Расходы на рекламу: {adSpending.toLocaleString('ru-RU')} ₽
-              </div>
-            </div>
           </div>
         )}
       </CardContent>
