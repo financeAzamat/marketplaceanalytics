@@ -218,7 +218,7 @@ export const Dashboard = () => {
 
       {/* New Widgets */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        <TopProductsWidget topProducts={topProducts} isLoading={productSalesLoading} />
+        <ROIWidget roi={roi} adSpending={adSpending} isLoading={productSalesLoading} />
         <MarginWidget 
           averageMargin={averageMargin} 
           averageMarkup={averageMarkup} 
@@ -233,7 +233,7 @@ export const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ROIWidget roi={roi} adSpending={adSpending} isLoading={productSalesLoading} />
+        <TopProductsWidget topProducts={topProducts} isLoading={productSalesLoading} />
         <ProblematicProductsWidget 
           problematicProducts={problematicProducts}
           isLoading={productSalesLoading}
