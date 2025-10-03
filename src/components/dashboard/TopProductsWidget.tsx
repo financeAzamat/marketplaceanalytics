@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Trophy } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Trophy } from "lucide-react";
 
 interface TopProduct {
   product_name: string;
@@ -37,32 +37,24 @@ export const TopProductsWidget = ({ topProducts, isLoading }: TopProductsWidgetP
         {isLoading ? (
           <div className="text-center text-muted-foreground">Загрузка...</div>
         ) : (
-          <div className="space-y-4">
-            {displayProducts.map((product, index) => (
-              <div key={index} className="flex items-start justify-between p-3 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Badge variant="outline" className="text-xs">#{index + 1}</Badge>
-                    <Badge variant="secondary" className="text-xs">
-                      {product.marketplace}
-                    </Badge>
-                  </div>
-                  <p className="font-medium text-sm">{product.product_name}</p>
-                  <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
-                    <div className="flex items-center space-x-1">
-                      <TrendingUp className="h-3 w-3" />
-                      <span>Выручка: {product.total_revenue.toLocaleString('ru-RU')} ₽</span>
-                    </div>
-                  </div>
-                  <div className="text-xs mt-1">
-                    <span className="text-green-600 font-medium">
-                      Прибыль: {product.total_profit.toLocaleString('ru-RU')} ₽
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Наименование товара</TableHead>
+                <TableHead className="text-right">Выручка</TableHead>
+                <TableHead className="text-right">Прибыль</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {displayProducts.map((product, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{product.product_name}</TableCell>
+                  <TableCell className="text-right">{product.total_revenue.toLocaleString('ru-RU')} ₽</TableCell>
+                  <TableCell className="text-right text-green-600">{product.total_profit.toLocaleString('ru-RU')} ₽</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>
