@@ -46,6 +46,7 @@ export const MarginWidget = ({ averageMargin, averageMarkup, isLoading }: Margin
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-xs">(Прибыль / Себестоимость) × 100%</p>
+                      <p className="text-xs text-red-500 mt-1">Для корректного расчета внесите данные о себестоимости</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
