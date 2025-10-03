@@ -42,7 +42,7 @@ export const TopProductsWidget = ({ topProducts, isLoading }: TopProductsWidgetP
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Наименование товара</TableHead>
+                <TableHead>Товар</TableHead>
                 <TableHead>Артикул WB</TableHead>
                 <TableHead className="text-right">Количество продаж</TableHead>
                 <TableHead className="text-right">Выручка</TableHead>
