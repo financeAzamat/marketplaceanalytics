@@ -45,21 +45,24 @@ export const Dashboard = () => {
   const totalCosts = costs.reduce((sum, item) => sum + Number(item.total_amount), 0);
 
   // Calculate widget data
-  const productSalesMap = new Map<string, { revenue: number; profit: number; cogs: number; marketplace: string }>();
+  const productSalesMap = new Map<string, { revenue: number; profit: number; cogs: number; quantity: number; supplier_article?: string; marketplace: string }>();
   productSales.forEach((sale) => {
     const key = sale.product_name;
-    const existing = productSalesMap.get(key) || { revenue: 0, profit: 0, cogs: 0, marketplace: sale.marketplace };
+    const existing = productSalesMap.get(key) || { revenue: 0, profit: 0, cogs: 0, quantity: 0, supplier_article: sale.supplier_article, marketplace: sale.marketplace };
     existing.revenue += Number(sale.revenue);
     existing.profit += Number(sale.profit);
     existing.cogs += Number(sale.cogs);
+    existing.quantity += Number(sale.quantity);
     productSalesMap.set(key, existing);
   });
 
   const topProducts = Array.from(productSalesMap.entries())
     .map(([product_name, data]) => ({
       product_name,
+      supplier_article: data.supplier_article,
       total_revenue: data.revenue,
       total_profit: data.profit,
+      total_quantity: data.quantity,
       marketplace: data.marketplace,
     }))
     .sort((a, b) => b.total_revenue - a.total_revenue)
@@ -224,18 +227,18 @@ export const Dashboard = () => {
           averageMarkup={averageMarkup} 
           isLoading={productSalesLoading} 
         />
-        <UnprofitableAlert 
-          unprofitablePercentage={unprofitablePercentage}
-          unprofitableCount={unprofitableProducts.length}
-          totalCount={productSales.length}
+        <ProblematicProductsWidget 
+          problematicProducts={problematicProducts}
           isLoading={productSalesLoading}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TopProductsWidget topProducts={topProducts} isLoading={productSalesLoading} />
-        <ProblematicProductsWidget 
-          problematicProducts={problematicProducts}
+        <UnprofitableAlert 
+          unprofitablePercentage={unprofitablePercentage}
+          unprofitableCount={unprofitableProducts.length}
+          totalCount={productSales.length}
           isLoading={productSalesLoading}
         />
       </div>
